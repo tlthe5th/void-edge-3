@@ -1,59 +1,60 @@
-# Void Edge Chronicles 3.0
+# Void Edge Chronicles 3.0 & Bumper Pool — Tabletop Edition
 
-**The Abyss Championship — Realistic Tabletop Edition**  
-*Created by Thomas Richards*
+**Created by Thomas Richards**  
+Licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**
 
-**Void Edge Chronicles 3.0** is a self-contained, browser-based physics tabletop strategy game built with vanilla HTML5 Canvas, CSS3, and the Web Audio API. Combining billiards-style bank angles with a central gravitational funnel, players draft escalating tiers of marbles to outmaneuver rivals and knock opposing pieces into the Void.
-
----
-
-## 🎮 Play Now
-
-* **Live Game:** [Play Void Edge Chronicles 3.0](https://tlthe5th.github.io/void-edge-3)
-* **Official Rulebook & Lore:** [SpirituallySmart.com](https://spirituallysmart.blogspot.com/2026/08/void-edge-minigame-by-thomas-richards.html)
+A single-file, zero-dependency HTML5 Canvas physics tabletop game featuring two complete competitive modes on an interactive custom-rendered table: **Void Edge Chronicles 3.0** (a 5-tier gravity-funnel strategy duel) and **Classic Bumper Pool** (with simultaneous count-of-3 opening bank breaks, tight pockets, and bumper-carom AI).
 
 ---
 
-## ✨ What's New in 3.0
+## Live Links & Official Rulebooks
 
-* **Realistic 3D-Shaded Tabletop Arena:** Features mitered outer rails, procedural woven felt texture, a 4-sided beveled metallic gravity funnel, exterior reserve marble trays, and side resting gutters for the tapered red-and-gold Void Cues.
-* **Tactile Void Cue & Bounce Raycasting:** Dragging back draws a tapered cue stick behind your active marble, fills a 4-tier power meter (`TOUCH`, `SOFT`, `MEDIUM`, `HARD`), and projects a real-time collision and cushion bounce trajectory.
-* **The Chronicles Campaign Ladder:** Challenge four distinct AI opponents—**Kael the Drifter**, **Lyra of the Rim**, **Vespera**, and **The Void Architect**—each powered by multi-marble physics lookahead simulations tailored to their tactical tier.
-* **Void Cam Slow-Motion Replays:** Sinking high-value **5pt Green Enforcers** or **10pt Cyan Heavy Diamonds** automatically triggers a 0.35x slow-motion instant replay.
-* **Void Shards & Table Armory:** Earn Void Shards from victories and style knockouts to unlock custom cabinet woods, felt cloths, and funnel metals (*Royal Violet & Chrome*, *Obsidian & Brushed Gold*, *Tournament Emerald & Steel*, and *Crimson Velvet & Titanium*), saved automatically via `localStorage`.
-* **Chronicle Referee & Shot Log:** Real-time play-by-play commentary paired with an expandable match event log and built-in interactive Field Manual.
-* **3-Track Procedural Jukebox:** Switch between *Void Chase*, *Abyss Drift*, and *Neon Duel* alongside velocity-scaled collision acoustics.
+* **Play Online / Live Demo:** https://tlthe5th.github.io/void-edge-3/
+* **Official Void Edge Rulebook:** https://spirituallysmart.blogspot.com/2026/08/void-edge-minigame-by-thomas-richards.html
+* **Official Bumper Pool Rules Reference:** https://www.gametablesonline.com/bumper-pool-tables/rules.html
+* **Creator Hub:** https://spirituallysmart.com
 
 ---
 
-## 📜 Rules & Gameplay
+## Game Modes
 
-1. **Initiative Coin Toss:** At the start of each match, the coin toss winner chooses to **Attack First (Corner Gambit)** or **Defer (Counter Anchor)**.
-2. **Five-Tier Escalating Roster:** Teams alternate launching 5 marbles drafted from their exterior reserve trays:
-   * **White Scout:** `1 pt`
-   * **Yellow Skirmisher:** `2 pts`
-   * **Red Vanguard:** `3 pts`
-   * **Green Enforcer:** `5 pts`
-   * **Cyan Heavy Diamond:** `10 pts`
-3. **The Beveled Gravity Funnel:** Any marble rolling onto the 4-sided sloped ramp experiences continuous gravitational pull toward the central Void pit.
-4. **Touch-Rule Scoring:**
-   * Knocking an opponent's marble into the Void awards its point value to your team.
-   * If your own marble drops into the Void *after* contacting an opponent's marble, your opponent scores its points.
-   * Dropping your own untouched marble into the Void awards **0 points** (unforced fall).
-5. **Sudden Death:** If the score is tied after all 10 shots, both teams deploy `10 pt` Cyan Heavy Diamonds for sudden-death knockout rounds until a winner is decided.
+### 1. Void Edge Chronicles 3.0 (Square 660×660 Gravity Arena)
+* **Initiative Coin Toss:** Win the toss to choose between **Attack First (Corner Gambit)** or **Defer (Counter Anchor)**.
+* **Escalating 5-Tier Marble Roster (10-Shot Match):** Each team drafts five marbles in ascending point order from their exterior tray:
+  1. **White Scout** — `1 pt`
+  2. **Yellow Skirmisher** — `2 pts`
+  3. **Red Vanguard** — `3 pts`
+  4. **Green Enforcer** — `5 pts`
+  5. **Cyan Heavy Diamond** — `10 pts`
+* **Gravity Funnel & Touch Rule:** Knock opponent marbles down the sloped metallic ramp into the central Void abyss to score their point value. Unforced self-drops award `0 pts`.
+* **Sudden Death:** Tied matches enter Sudden Death with `10 pt` Cyan Heavy Diamonds until one player knocks the rival's Diamond into the Void.
+
+### 2. Classic Bumper Pool (Rectangular 820×540 12-Bumper Table)
+* **Simultaneous 3-2-1 Opening Bank Break:** Both players bank their marked cue ball off a side cushion toward their target pocket on the count of 3.
+  * **One Player Sinks / Closest to Goal:** All balls stay exactly where they stop, and the winner takes the next shot with the next ball in line.
+  * **Simultaneous Tie Shootout:** If both players sink their ball at the same time on 3, each spots their next ball in line (starting to the right of the opponent's goal) and shoots simultaneously on 3 again until one misses.
+* **Tight Cup & Rim Lip-Out Physics:** Pocket cups (`14.8px` radius vs `14px` balls) require clean speed and angle control; overly hard or off-center shots swirl around the rim and lip out.
+* **Marked Cue Ball Priority & Official Penalties:**
+  * You must sink your marked cue ball before pocketing any of your remaining four balls.
+  * Sinking another ball early, or dropping your own ball into your own cup, awards your opponent **2 free pocketed balls** dropped straight into their goal.
+  * Sinking your final ball into the wrong cup results in an immediate forfeit.
 
 ---
 
-## 🚀 Installation & Self-Hosting
+## Key Features
 
-Void Edge Chronicles 3.0 requires **zero build tools, external libraries, or asset folders**:
+* **Bumper-Carom & Multi-Ball Physics AI:** Four selectable rivals (**Kael the Drifter**, **Lyra of the Rim**, **Vespera**, and **The Void Architect**) capable of simulating multi-ball collisions, rail mirror-banks, and grazing caroms off all 12 rubber bumper posts.
+* **Single Game & Best-of-3 Series:** Play quick single matches, Best-of-3 tournament series, or 2-Player Local Pass & Play.
+* **Void Cam Slow-Motion Replay:** High-value eliminations (`5pt+` marbles or marked cue balls) trigger an automatic slow-motion replay.
+* **Table & Funnel Armory:** Earn **Void Shards (`◆`)** from matches to unlock custom felt and cabinet finishes (*Royal Violet & Chrome*, *Obsidian & Brushed Gold*, *Tournament Emerald & Steel*, and *Crimson Velvet & Titanium*).
+* **Web Audio Synthesizer & Jukebox:** Procedural collision clacks, pit drops, countdown tones, and a 4-track built-in chiptune/classical jukebox—zero external audio files required.
 
-1. Download or clone `index.html`.
-2. Open `index.html` directly in any modern desktop or mobile browser, or deploy via **GitHub Pages**.
+---
 
-### Blog / Website Embed Snippet
+## Quick Start
 
-```html
-<div style="width: 100%; max-width: 640px; margin: 0 auto; text-align: center;">
-  <iframe src="[https://tlthe5th.github.io/void-edge/](https://tlthe5th.github.io/void-edge/)" width="100%" height="880px" style="border: 2px solid #a855f7; border-radius: 12px; background: #06030e;" allowfullscreen="" loading="lazy"></iframe>
-</div>
+No build step, server, or external packages are required:
+
+1. Clone or download this repository:
+   ```bash
+   git clone [https://github.com/tlthe5th/void-edge-3.git](https://github.com/tlthe5th/void-edge-3.git)
