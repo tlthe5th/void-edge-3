@@ -9,7 +9,7 @@
 
 ## 🎮 Play Now
 
-* **Live Game:** [Play Void Edge Chronicles 3.0](https://tlthe5th.github.io/void-edge/) *(update URL if hosted in a dedicated 3.0 repository)*
+* **Live Game:** [Play Void Edge Chronicles 3.0](https://tlthe5th.github.io/void-edge-3)
 * **Official Rulebook & Lore:** [SpirituallySmart.com](https://spirituallysmart.blogspot.com/2026/08/void-edge-minigame-by-thomas-richards.html)
 
 ---
