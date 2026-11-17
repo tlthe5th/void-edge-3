@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Void Edge Chronicles 2.0 — Realistic Tabletop Edition</title>
+<style>
+:root{
+  --bg:#06030e;--panel:#120926;--panel2:#1b0f38;--neon:#a855f7;--cyan:#22d3ee;
+  --gold:#facc15;--red:#f87171;--green:#4ade80;--text:#f8fafc;--muted:#94a3b8;--border:#34196b;
+}
+*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;user-select:none}
+html{overflow-y:scroll}
+body{
+  background:radial-gradient(circle at 50% 0%,#1d0d42 0%,var(--bg) 75%);
+  color:var(--text);margin:0;padding:.85rem;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+}
+.app{width:100%;max-width:680px;display:flex;flex-direction:column;align-items:center}
+
+/* Top Brand Bar */
+.topbar{
+  width:100%;display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:.5rem;padding:0 .25rem;
+}
+.brand h1{
+  margin:0;font-size:1.45rem;letter-spacing:1.5px;font-weight:900;
+  background:linear-gradient(90deg,#fff,#e9d5ff,#facc15);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.brand .sub{color:#c084fc;font-size:.75rem;letter-spacing:.4px}
+.wallet{
+  background:var(--panel);border:1px solid var(--border);border-radius:999px;
+  padding:.35rem .8rem;display:flex;align-items:center;gap:.45rem;
+  font-size:.82rem;font-weight:700;color:var(--gold);box-shadow:0 0 12px rgba(250,204,21,.15);
+}
+
+/* Scoreboard HUD */
+.hud{
+  display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:.6rem;
+  width:100%;margin-bottom:.55rem;
+}
+.card{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--border);border-radius:10px;padding:.45rem .6rem;
+  text-align:center;position:relative;overflow:hidden;
+}
+.card.active-turn{
+  border-color:var(--cyan);box-shadow:0 0 14px rgba(34,211,238,.28);
+}
+.card.active-turn.p2{
+  border-color:var(--gold);box-shadow:0 0 14px rgba(250,204,21,.28);
+}
+.card-label{font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.card-score{font-size:1.55rem;font-weight:900;line-height:1.15;margin:2px 0}
+.card-sub{font-size:.72rem;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Referee Ticker */
+.referee{
+  width:100%;background:var(--panel);border:1px solid var(--neon);border-radius:10px;
+  padding:.45rem .85rem;margin-bottom:.55rem;display:flex;align-items:center;gap:.65rem;
+  min-height:46px;box-shadow:0 0 16px rgba(168,85,247,.2);
+}
+.ref-badge{
+  background:var(--neon);color:#fff;font-size:.65rem;font-weight:900;
+  padding:.2rem .45rem;border-radius:4px;letter-spacing:.8px;flex-shrink:0;
+}
+.ref-text{font-size:.86rem;font-weight:600;color:#f3e8ff;line-height:1.25}
+
+/* Canvas Wrapper */
+.stage{
+  position:relative;width:100%;max-width:560px;aspect-ratio:1/1;
+  border-radius:14px;overflow:hidden;border:3px solid #4c1d95;
+  box-shadow:0 18px 45px rgba(0,0,0,.75),0 0 28px rgba(168,85,247,.3);
+  background:#120624;
+}
+canvas{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
+
+/* Power Meter Bar */
+.power-bar-wrap{
+  width:100%;max-width:560px;margin-top:.5rem;background:var(--panel);
+  border:1px solid var(--border);border-radius:8px;padding:.35rem .7rem;
+  display:flex;align-items:center;gap:.65rem;font-size:.75rem;
+}
+.power-track{
+  flex:1;height:8px;background:#090414;border-radius:999px;overflow:hidden;
+  border:1px solid #2b1459;position:relative;
+}
+.power-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#22d3ee,#4ade80,#facc15,#f87171);
+  transition:width .04s linear;
+}
+.power-tier{font-weight:800;min-width:66px;text-align:right;color:var(--cyan)}
+
+/* Controls */
+.controls{
+  display:flex;gap:.5rem;margin-top:.65rem;flex-wrap:wrap;justify-content:center;width:100%;
+}
+button{
+  background:var(--neon);color:#fff;border:none;padding:.52rem .95rem;
+  border-radius:8px;font-weight:700;cursor:pointer;font-size:.84rem;
+  transition:transform .08s,opacity .15s,background .15s;
+}
+button:hover{opacity:.92}
+button:active{transform:scale(.97)}
+button.alt{background:#1e1338;border:1px solid var(--border);color:#e2e8f0}
+button.alt:hover{border-color:var(--neon)}
+button.gold{background:linear-gradient(135deg,#eab308,#ca8a04);color:#090514;font-weight:900}
+
+/* Overlays & Modals */
+.overlay{
+  position:absolute;inset:0;background:rgba(10,4,22,.88);backdrop-filter:blur(6px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:1.25rem;z-index:20;text-align:center;
+}
+.modal{
+  position:fixed;inset:0;background:rgba(4,2,10,.88);backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;padding:1rem;z-index:50;
+}
+.modal-card{
+  background:var(--panel);border:2px solid var(--neon);border-radius:14px;
+  padding:1.35rem;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+  text-align:center;box-shadow:0 0 35px rgba(168,85,247,.45);
+}
+.hidden{display:none!important}
+
+/* Title Menu */
+.title-logo{
+  font-size:2rem;font-weight:900;letter-spacing:2px;margin:0;
+  background:linear-gradient(90deg,#22d3ee,#fff,#facc15);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.title-tag{color:#c084fc;font-size:.85rem;margin:.25rem 0 1.1rem}
+.menu-grid{display:grid;grid-template-columns:1fr;gap:.55rem;width:100%;max-width:300px}
+.menu-grid button{padding:.7rem 1rem;font-size:.95rem}
+
+/* Rival Cards & Shop */
+.rival-list{display:flex;flex-direction:column;gap:.55rem;margin:.85rem 0;text-align:left}
+.rival-item{
+  background:var(--panel2);border:1px solid var(--border);border-radius:10px;
+  padding:.65rem .85rem;display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;transition:border-color .15s;
+}
+.rival-item:hover{border-color:var(--cyan)}
+.rival-item.selected{border-color:var(--gold);background:#221245}
+.rival-name{font-weight:800;font-size:.92rem;color:#fff}
+.rival-desc{font-size:.75rem;color:#cbd5e1;margin-top:2px}
+.badge{
+  font-size:.68rem;font-weight:800;padding:.2rem .5rem;border-radius:999px;
+  background:#2e1659;color:#e9d5ff;white-space:nowrap;
+}
+.badge.beaten{background:rgba(74,222,128,.2);color:var(--green);border:1px solid var(--green)}
+
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.85rem 0}
+.shop-item{
+  background:var(--panel2);border:1px solid var(--border);border-radius:10px;
+  padding:.7rem;text-align:center;
+}
+.shop-item.equipped{border-color:var(--cyan);box-shadow:0 0 12px rgba(34,211,238,.25)}
+
+/* Shot Log Drawer */
+.log-box{
+  width:100%;max-width:560px;background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:.65rem .85rem;margin-top:.55rem;font-size:.78rem;
+}
+.log-list{
+  list-style:none;padding:0;margin:.4rem 0 0;max-height:110px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:.28rem;color:#cbd5e1;
+}
+.log-list li{padding:.25rem .45rem;background:#0b0518;border-radius:5px;border-left:3px solid var(--neon)}
+
+/* Void Cam Banner */
+.void-cam-banner{
+  position:absolute;top:16px;left:16px;background:rgba(220,38,38,.92);
+  color:#fff;font-weight:900;font-size:.75rem;letter-spacing:1px;
+  padding:.3rem .65rem;border-radius:6px;display:flex;align-items:center;gap:.4rem;
+  z-index:15;box-shadow:0 0 15px rgba(220,38,38,.7);animation:pulseCam .8s infinite alternate;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:#fff}
+@keyframes pulseCam{from{opacity:.75}to{opacity:1}}
+
+footer{margin-top:.85rem;font-size:.76rem;color:var(--muted);text-align:center}
+footer a{color:var(--cyan);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <h1>VOID EDGE CHRONICLES 2.0</h1>
+      <div class="sub">Realistic Tabletop Edition &bull; Created by Thomas Richards</div>
+    </div>
+    <div class="wallet" title="Earn Void Shards by winning matches and scoring style knockouts">
+      <span>&#9670;</span> <span id="shardCount">0</span> Shards
+    </div>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="hud">
+    <div class="card" id="cardP1">
+      <div class="card-label" style="color:var(--cyan)" id="p1Name">GRADIENTS (YOU)</div>
+      <div class="card-score" id="s1">0</div>
+      <div class="card-sub" id="r1">On Board: 0</div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="color:var(--gold)" id="matchModeLabel">CHRONICLES</div>
+      <div class="card-score" id="turnInfo" style="font-size:1.25rem;color:#e9d5ff">1 / 10</div>
+      <div class="card-sub" id="nextMarble" style="color:var(--cyan)">White Scout (1pt)</div>
+    </div>
+    <div class="card" id="cardP2">
+      <div class="card-label" style="color:var(--gold)" id="p2Name">VECTORS (CPU)</div>
+      <div class="card-score" id="s2">0</div>
+      <div class="card-sub" id="r2">Record: 0 - 0</div>
+    </div>
+  </div>
+
+  <!-- Live Referee -->
+  <div class="referee">
+    <span class="ref-badge">REFEREE</span>
+    <div class="ref-text" id="statusBar">Welcome to Void Edge Chronicles 2.0!</div>
+  </div>
+
+  <!-- Game Arena -->
+  <div class="stage" id="stageWrap">
+    <div class="void-cam-banner hidden" id="voidCamBadge"><span class="dot"></span> VOID CAM &bull; SLOW-MO REPLAY</div>
+    <canvas id="board" width="560" height="560"></canvas>
+
+    <!-- Title Overlay -->
+    <div class="overlay" id="titleOverlay">
+      <h2 class="title-logo">VOID EDGE 2.0</h2>
+      <p class="title-tag">Five Tiers of Warriors. One Gravity Abyss.</p>
+      <div class="menu-grid">
+        <button class="gold" onclick="openChroniclesModal()">&#9876; Play Chronicles (Campaign)</button>
+        <button onclick="startQuickMatch(true)">&#9889; Quick Match vs CPU</button>
+        <button class="alt" onclick="startQuickMatch(false)">&#128101; 2-Player Local Pass &amp; Play</button>
+        <button class="alt" onclick="openShopModal()">&#9670; Table &amp; Funnel Finishes</button>
+        <button class="alt" onclick="openRulesModal()">&#128214; How to Play (Interactive)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Power Meter -->
+  <div class="power-bar-wrap">
+    <span style="font-weight:800;color:#cbd5e1">POWER</span>
+    <div class="power-track"><div class="power-fill" id="powerFill"></div></div>
+    <span class="power-tier" id="powerTier">READY</span>
+  </div>
+
+  <!-- Bottom Controls -->
+  <div class="controls">
+    <button class="alt" onclick="showTitle()">&#8962; Menu</button>
+    <button onclick="resetMatch()">&#8635; Rematch</button>
+    <button class="alt" onclick="openChroniclesModal()" id="rivalBtn">Rival: Architect</button>
+    <button class="alt" onclick="cycleJukebox()" id="musicBtn">&#9835; Jukebox: OFF</button>
+    <button class="alt" onclick="toggleLog()" id="logBtn">&#128220; Shot Log</button>
+  </div>
+
+  <!-- Collapsible Shot Log -->
+  <div class="log-box hidden" id="logDrawer">
+    <div style="display:flex;justify-content:space-between;font-weight:800;color:#e9d5ff">
+      <span>CHRONICLE SHOT LOG</span>
+      <span id="logCount">0 events</span>
+    </div>
+    <ul class="log-list" id="logList"></ul>
+  </div>
+
+  <footer>
+    Original Game &amp; Rules by Thomas Richards (AGPL-3.0) |
+    <a href="https://spirituallysmart.blogspot.com/2026/08/void-edge-minigame-by-thomas-richards.html" target="_blank">Official Rulebook</a> |
+    <a href="https://spirituallysmart.com" target="_blank">SpirituallySmart.com</a>
+  </footer>
+</div>
+
+<!-- Coin Toss Modal -->
+<div class="modal hidden" id="coinModal">
+  <div class="modal-card">
+    <h2 style="margin-top:0;color:var(--gold)">&#129689; Initiative Coin Toss</h2>
+    <p id="coinText" style="color:#e2e8f0;line-height:1.45"></p>
+    <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1.1rem;flex-wrap:wrap" id="coinButtons">
+      <button onclick="chooseOrder(true)">Attack First (Corner Gambit)</button>
+      <button class="alt" onclick="chooseOrder(false)">Defer (Counter Anchor)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chronicles Rival Select Modal -->
+<div class="modal hidden" id="chroniclesModal">
+  <div class="modal-card">
+    <h2 style="margin-top:0;color:var(--gold)">&#9876; The Chronicles Ladder</h2>
+    <p style="font-size:.82rem;color:#cbd5e1;margin-top:-.4rem">Defeat each Void Master to earn Void Shards and claim the Abyss Crown.</p>
+    <div class="rival-list" id="rivalList"></div>
+    <div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem">
+      <button class="gold" onclick="launchSelectedRival()">Challenge Selected Rival</button>
+      <button class="alt" onclick="closeModals()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shop / Armory Modal -->
+<div class="modal hidden" id="shopModal">
+  <div class="modal-card">
+    <h2 style="margin-top:0;color:var(--cyan)">&#9670; Table &amp; Funnel Finishes</h2>
+    <p style="font-size:.8rem;color:#cbd5e1;margin-top:-.4rem">Unlock custom cabinet woods, felt cloths, and funnel metals using your Void Shards.</p>
+    <div class="shop-grid" id="shopGrid"></div>
+    <button class="alt" onclick="closeModals()">Back to Table</button>
+  </div>
+</div>
+
+<!-- How to Play Modal -->
+<div class="modal hidden" id="rulesModal">
+  <div class="modal-card" style="text-align:left">
+    <h2 style="margin-top:0;color:var(--cyan);text-align:center">&#128214; Void Edge 2.0 Field Manual</h2>
+    <div style="font-size:.84rem;color:#e2e8f0;line-height:1.5;display:flex;flex-direction:column;gap:.65rem">
+      <div><strong style="color:var(--gold)">1. Five-Tier Roster:</strong> Each team drafts 5 marbles from their reserve rack in escalating value: <b>White (1pt)</b>, <b>Yellow (2pt)</b>, <b>Red (3pt)</b>, <b>Green (5pt)</b>, and <b>Cyan Heavy Diamond (10pt)</b>.</div>
+      <div><strong style="color:var(--cyan)">2. The Beveled Gravity Funnel:</strong> Marbles rolling onto the 4-sided sloped ramp are pulled inward toward the central Void hole.</div>
+      <div><strong style="color:var(--green)">3. Touch-Rule Scoring:</strong> You score points whenever an opponent's marble drops into the Void—or when your own marble knocks an enemy in. Dropping your own untouched marble into the pit awards 0 points!</div>
+      <div><strong style="color:var(--red)">4. Sudden Death &amp; Void Cam:</strong> Tied after 10 shots? Both teams spawn 10pt Cyan Diamonds for sudden-death knockout rounds. High-value eliminations trigger slow-mo <b>Void Cam</b> replays.</div>
+    </div>
+    <div style="text-align:center;margin-top:1.1rem">
+      <button onclick="closeModals()">Got It</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas=document.getElementById('board'),ctx=canvas.getContext('2d');
+const W=560,H=560,RAIL=32,SLOPE_HALF=135,HOLE_HALF=52,VOID_R=19,R=17;
+
+const ROSTER=[
+  {name:'White Scout',val:1,color:'#f1f5f9',hi:'#ffffff',lo:'#64748b',num:'#0f172a'},
+  {name:'Yellow Skirmisher',val:2,color:'#eab308',hi:'#fef08a',lo:'#713f12',num:'#0f172a'},
+  {name:'Red Vanguard',val:3,color:'#dc2626',hi:'#fca5a5',lo:'#450a0a',num:'#ffffff'},
+  {name:'Green Enforcer',val:5,color:'#16a34a',hi:'#86efac',lo:'#052e16',num:'#ffffff'},
+  {name:'Cyan Heavy Diamond',val:10,color:'#06b6d4',hi:'#a5f3fc',lo:'#083344',num:'#0f172a'}
+];
+
+const RIVALS=[
+  {id:'kael',name:'Kael the Drifter',tier:'Novice',diff:'easy',reward:25,desc:'Cautious perimeter shooter. Leaves openings near the funnel.'},
+  {id:'lyra',name:'Lyra of the Rim',tier:'Tactician',diff:'medium',reward:45,desc:'Controls outer lanes and punishes exposed marbles.'},
+  {id:'vespera',name:'Vespera',tier:'Bank Specialist',diff:'hard_bank',reward:70,desc:'Calculates cushion angles to snipe shielded targets.'},
+  {id:'architect',name:'The Void Architect',tier:'Grand Champion',diff:'master',reward:120,desc:'Full multi-marble physics simulation. Ruthless & unforgiving.'}
+];
+
+const THEMES=[
+  {
+    id:'royal',name:'Royal Violet & Chrome (Classic)',cost:0,
+    railOuter:'#17072b',railMid:'#2b0f4d',railInner:'#431975',
+    felt:'#3b1266',feltDark:'#230940',
+    rampTop:'#f1f5f9',rampLeft:'#cbd5e1',rampRight:'#94a3b8',rampBot:'#64748b',
+    pitWall:'#280c47',pitCore:'#120424'
+  },
+  {
+    id:'obsidian',name:'Obsidian & Brushed Gold',cost:45,
+    railOuter:'#09090b',railMid:'#18181b',railInner:'#27272a',
+    felt:'#1e1b2e',feltDark:'#0f0d1a',
+    rampTop:'#fef08a',rampLeft:'#eab308',rampRight:'#ca8a04',rampBot:'#854d0e',
+    pitWall:'#1c1917',pitCore:'#09090b'
+  },
+  {
+    id:'emerald',name:'Tournament Emerald & Steel',cost:80,
+    railOuter:'#1c0a06',railMid:'#3b150c',railInner:'#5c2214',
+    felt:'#064e3b',feltDark:'#022c22',
+    rampTop:'#e2e8f0',rampLeft:'#94a3b8',rampRight:'#64748b',rampBot:'#475569',
+    pitWall:'#063729',pitCore:'#011c16'
+  },
+  {
+    id:'crimson',name:'Crimson Velvet & Titanium',cost:115,
+    railOuter:'#14050a',railMid:'#2e0a16',railInner:'#4c1124',
+    felt:'#4c0519',feltDark:'#29020d',
+    rampTop:'#cbd5e1',rampLeft:'#94a3b8',rampRight:'#64748b',rampBot:'#334155',
+    pitWall:'#330412',pitCore:'#170107'
+  }
+];
+
+// Procedural Felt Grain Texture (offscreen canvas for crisp performance)
+const feltCanvas=document.createElement('canvas');
+feltCanvas.width=128;feltCanvas.height=128;
+const fctx=feltCanvas.getContext('2d');
+for(let y=0;y<128;y++){
+  for(let x=0;x<128;x++){
+    const v=Math.random();
+    fctx.fillStyle=v>0.5?`rgba(255,255,255,${(v-0.5)*0.045})`:`rgba(0,0,0,${(0.5-v)*0.08})`;
+    fctx.fillRect(x,y,1,1);
+  }
+}
+const feltPattern=ctx.createPattern(feltCanvas,'repeat');
+
+// Persistent Save Data
+let saveData={
+  shards:0,
+  beaten:[],
+  unlockedThemes:['royal'],
+  activeTheme:'royal',
+  record:{wins:0,losses:0}
+};
+try{
+  const raw=localStorage.getItem('void_edge_chronicles_2_real');
+  if(raw)saveData={...saveData,...JSON.parse(raw)};
+}catch(e){}
+function persist(){
+  try{localStorage.setItem('void_edge_chronicles_2_real',JSON.stringify(saveData));}catch(e){}
+  document.getElementById('shardCount').textContent=saveData.shards;
+}
+
+// Game State
+let selectedRival=RIVALS[3];
+let marbles=[],particles=[],scores=[0,0],moveIdx=0,order=[0,1],activeTeam=0;
+let phase='title',vsAI=true,suddenDeath=false,aiming=false;
+let aimPos={x:280,y:280},shooterPos={x:56,y:280},aiTimer=null;
+let shakeTime=0,shakeMag=0;
+let shotLogs=[];
+
+// Void Cam Replay State
+let replayBuffer=[];
+let isReplaying=false;
+let replayFrames=[];
+let replayIdx=0;
+let postReplayCallback=null;
+
+// Audio Engine
+let audioCtx=null,jukeboxTrack=0,musicTimeout=null;
+const TRACK_NAMES=['OFF','1: Void Chase','2: Abyss Drift','3: Neon Duel'];
+const TRACKS=[
+  [],
+  [{f:220,d:120},{f:329.63,d:120},{f:440,d:120},{f:523.25,d:120},{f:440,d:120},{f:329.63,d:120},{f:493.88,d:120},{f:329.63,d:120}],
+  [{f:146.83,d:220},{f:220,d:220},{f:261.63,d:220},{f:329.63,d:220},{f:293.66,d:220},{f:220,d:220},{f:196,d:220},{f:220,d:220}],
+  [{f:196,d:140},{f:293.66,d:140},{f:392,d:140},{f:466.16,d:140},{f:392,d:140},{f:293.66,d:140},{f:349.23,d:140},{f:293.66,d:140}]
+];
+
+function getAudio(){
+  if(!audioCtx){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC)audioCtx=new AC();
+  }
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
+  return audioCtx;
+}
+
+function playSFX(type,intensity=1){
+  try{
+    const c=getAudio();if(!c)return;
+    const now=c.currentTime;
+    const osc=c.createOscillator(),gain=c.createGain();
+    osc.connect(gain);gain.connect(c.destination);
+    const vol=Math.min(0.24,Math.max(0.04,0.14*intensity));
+
+    if(type==='launch'){
+      osc.type='sine';
+      osc.frequency.setValueAtTime(160,now);
+      osc.frequency.exponentialRampToValueAtTime(520,now+0.13);
+      gain.gain.setValueAtTime(vol,now);
+      gain.gain.linearRampToValueAtTime(0.005,now+0.13);
+      osc.start(now);osc.stop(now+0.13);
+    }else if(type==='clack'){
+      osc.type='triangle';
+      osc.frequency.setValueAtTime(340+intensity*220,now);
+      osc.frequency.exponentialRampToValueAtTime(90,now+0.055);
+      gain.gain.setValueAtTime(vol,now);
+      gain.gain.linearRampToValueAtTime(0.005,now+0.055);
+      osc.start(now);osc.stop(now+0.055);
+    }else if(type==='void'){
+      osc.type='sawtooth';
+      osc.frequency.setValueAtTime(190,now);
+      osc.frequency.exponentialRampToValueAtTime(36,now+0.45);
+      gain.gain.setValueAtTime(0.22,now);
+      gain.gain.linearRampToValueAtTime(0.005,now+0.45);
+      osc.start(now);osc.stop(now+0.45);
+    }else if(type==='win'){
+      [440,554.37,659.25,880].forEach((f,idx)=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.type='triangle';o.connect(g);g.connect(c.destination);
+        o.frequency.setValueAtTime(f,now+idx*0.11);
+        g.gain.setValueAtTime(0.15,now+idx*0.11);
+        g.gain.linearRampToValueAtTime(0.005,now+idx*0.11+0.25);
+        o.start(now+idx*0.11);o.stop(now+idx*0.11+0.25);
+      });
+    }else if(type==='lose'){
+      osc.type='sawtooth';
+      osc.frequency.setValueAtTime(280,now);
+      osc.frequency.exponentialRampToValueAtTime(95,now+0.55);
+      gain.gain.setValueAtTime(0.18,now);
+      gain.gain.linearRampToValueAtTime(0.005,now+0.55);
+      osc.start(now);osc.stop(now+0.55);
+    }
+  }catch(e){}
+}
+
+function cycleJukebox(){
+  jukeboxTrack=(jukeboxTrack+1)%TRACKS.length;
+  document.getElementById('musicBtn').textContent=`♫ Jukebox: ${TRACK_NAMES[jukeboxTrack]}`;
+  if(musicTimeout){clearTimeout(musicTimeout);musicTimeout=null;}
+  if(jukeboxTrack>0){getAudio();stepJukebox(0);}
+}
+function stepJukebox(i){
+  if(jukeboxTrack===0)return;
+  const seq=TRACKS[jukeboxTrack];
+  const note=seq[i%seq.length];
+  try{
+    const c=getAudio();
+    if(c){
+      const o=c.createOscillator(),g=c.createGain();
+      o.type=jukeboxTrack===2?'sine':'sawtooth';
+      o.connect(g);g.connect(c.destination);
+      const now=c.currentTime;
+      o.frequency.setValueAtTime(note.f,now);
+      g.gain.setValueAtTime(0.038,now);
+      g.gain.exponentialRampToValueAtTime(0.001,now+(note.d/1000)*0.85);
+      o.start(now);o.stop(now+note.d/1000);
+    }
+  }catch(e){}
+  musicTimeout=setTimeout(()=>stepJukebox(i+1),note.d);
+}
+
+// UI & Navigation
+function setReferee(msg){
+  document.getElementById('statusBar').textContent=msg;
+}
+function addLog(msg){
+  shotLogs.unshift(msg);
+  if(shotLogs.length>25)shotLogs.pop();
+  document.getElementById('logCount').textContent=`${shotLogs.length} events`;
+  const ul=document.getElementById('logList');
+  ul.innerHTML=shotLogs.map(t=>`<li>${t}</li>`).join('');
+}
+function toggleLog(){
+  document.getElementById('logDrawer').classList.toggle('hidden');
+}
+function closeModals(){
+  document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
+}
+function showTitle(){
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  isReplaying=false;
+  document.getElementById('voidCamBadge').classList.add('hidden');
+  phase='title';
+  document.getElementById('titleOverlay').classList.remove('hidden');
+  setReferee('Select a mode from the Void Edge Chronicles menu.');
+}
+
+function openChroniclesModal(){
+  const list=document.getElementById('rivalList');
+  list.innerHTML=RIVALS.map(r=>{
+    const isSel=selectedRival.id===r.id;
+    const isBeat=saveData.beaten.includes(r.id);
+    return `<div class="rival-item ${isSel?'selected':''}" onclick="selectRival('${r.id}')">
+      <div>
+        <div class="rival-name">${r.name} <span style="color:var(--gold);font-size:.75rem">(+${r.reward} &#9670;)</span></div>
+        <div class="rival-desc">${r.desc}</div>
+      </div>
+      <span class="badge ${isBeat?'beaten':''}">${isBeat?'DEFEATED':r.tier}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('chroniclesModal').classList.remove('hidden');
+}
+function selectRival(id){
+  selectedRival=RIVALS.find(r=>r.id===id)||RIVALS[3];
+  document.getElementById('rivalBtn').textContent=`Rival: ${selectedRival.name.split(' ')[0]}`;
+  openChroniclesModal();
+}
+function launchSelectedRival(){
+  closeModals();
+  vsAI=true;
+  document.getElementById('matchModeLabel').textContent='CHRONICLES';
+  document.getElementById('p1Name').textContent='GRADIENTS (YOU)';
+  document.getElementById('p2Name').textContent=selectedRival.name.toUpperCase();
+  document.getElementById('rivalBtn').style.display='inline-block';
+  resetMatch();
+}
+function startQuickMatch(ai){
+  vsAI=ai;
+  document.getElementById('matchModeLabel').textContent=ai?'QUICK MATCH':'2P LOCAL';
+  document.getElementById('p1Name').textContent='GRADIENTS (P1)';
+  document.getElementById('p2Name').textContent=ai?selectedRival.name.toUpperCase():'VECTORS (P2)';
+  document.getElementById('rivalBtn').style.display=ai?'inline-block':'none';
+  resetMatch();
+}
+
+function openShopModal(){
+  const grid=document.getElementById('shopGrid');
+  grid.innerHTML=THEMES.map(t=>{
+    const owned=saveData.unlockedThemes.includes(t.id);
+    const eq=saveData.activeTheme===t.id;
+    let btn=`<button onclick="buyOrEquipTheme('${t.id}')">${eq?'Equipped':owned?'Equip':'Unlock ('+t.cost+' ◆)'}</button>`;
+    return `<div class="shop-item ${eq?'equipped':''}">
+      <div style="width:100%;height:26px;border-radius:6px;background:${t.felt};border:3px solid ${t.rampLeft};margin-bottom:.45rem"></div>
+      <div style="font-weight:800;font-size:.82rem;margin-bottom:.35rem">${t.name}</div>
+      ${btn}
+    </div>`;
+  }).join('');
+  document.getElementById('shopModal').classList.remove('hidden');
+}
+function buyOrEquipTheme(id){
+  const t=THEMES.find(x=>x.id===id);
+  if(!t)return;
+  if(saveData.unlockedThemes.includes(id)){
+    saveData.activeTheme=id;
+    persist();openShopModal();
+  }else if(saveData.shards>=t.cost){
+    saveData.shards-=t.cost;
+    saveData.unlockedThemes.push(id);
+    saveData.activeTheme=id;
+    playSFX('win');
+    persist();openShopModal();
+  }else{
+    setReferee(`Need ${t.cost - saveData.shards} more Void Shards to unlock ${t.name}!`);
+  }
+}
+function openRulesModal(){
+  document.getElementById('rulesModal').classList.remove('hidden');
+}
+
+// Match Lifecycle
+function resetMatch(){
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  document.getElementById('titleOverlay').classList.add('hidden');
+  document.getElementById('voidCamBadge').classList.add('hidden');
+  marbles=[];particles=[];scores=[0,0];moveIdx=0;suddenDeath=false;
+  phase='coin';aiming=false;isReplaying=false;shotLogs=[];
+  addLog('New match initialized. Flipping coin for Initiative.');
+  updateHUD();
+  initCoin();
+}
+
+function initCoin(){
+  const winner=Math.random()<0.5?0:1;
+  window._coinWinner=winner;
+  if(vsAI && winner===1){
+    const cpuFirst=Math.random()<0.6;
+    document.getElementById('coinText').textContent=
+      `${selectedRival.name} won the coin toss and chose to ${cpuFirst?'Attack First (Corner Gambit)':'Defer (Counter Anchor)'}!`;
+    document.getElementById('coinButtons').classList.add('hidden');
+    document.getElementById('coinModal').classList.remove('hidden');
+    aiTimer=setTimeout(()=>chooseOrder(cpuFirst),1150);
+    return;
+  }
+  const who=winner===0?'Gradients (P1)':'Vectors (P2)';
+  document.getElementById('coinText').textContent=`${who} won the Initiative toss! Choose your tactical opening:`;
+  document.getElementById('coinButtons').classList.remove('hidden');
+  document.getElementById('coinModal').classList.remove('hidden');
+}
+
+function chooseOrder(goFirst){
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  const w=window._coinWinner;
+  order=goFirst?[w,1-w]:[1-w,w];
+  document.getElementById('coinModal').classList.add('hidden');
+  addLog(`${order[0]===0?'Gradients':'Vectors'} takes the opening shot.`);
+  startTurn();
+}
+
+function getCurrentMarbleSpec(){
+  if(suddenDeath)return ROSTER[4];
+  return ROSTER[Math.floor(moveIdx/2)];
+}
+
+function spawnSuddenDeathMarbles(forceReset=false){
+  if(forceReset)marbles=[];
+  if(!marbles.some(m=>m.team===0 && m.val===10)){
+    marbles.push({x:W/2-SLOPE_HALF-22,y:H/2-45,vx:0,vy:0,team:0,val:10,spec:ROSTER[4],touchedByOpp:false});
+  }
+  if(!marbles.some(m=>m.team===1 && m.val===10)){
+    marbles.push({x:W/2+SLOPE_HALF+22,y:H/2+45,vx:0,vy:0,team:1,val:10,spec:ROSTER[4],touchedByOpp:false});
+  }
+}
+
+function startTurn(){
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  if(!suddenDeath && moveIdx>=10){endMatch();return;}
+  if(suddenDeath)spawnSuddenDeathMarbles(false);
+
+  activeTeam=order[moveIdx%2];
+  shooterPos=activeTeam===0?{x:RAIL+R+8,y:H/2}:{x:W-RAIL-R-8,y:H/2};
+  aimPos={x:W/2,y:H/2};
+  phase='aim';
+  updateHUD();
+
+  const spec=getCurrentMarbleSpec();
+  const pName=activeTeam===0?'Gradients':(vsAI?selectedRival.name:'Vectors (P2)');
+  if(vsAI && activeTeam===1){
+    setReferee(`${pName} is lining up ${spec.name} (${spec.val}pt)...`);
+    aiTimer=setTimeout(aiShoot,750);
+  }else{
+    setReferee(`${pName}'s Turn — Pull back cue to fire ${spec.name} (${spec.val}pt)`);
+  }
+}
+
+function updateHUD(){
+  document.getElementById('s1').textContent=scores[0];
+  document.getElementById('s2').textContent=scores[1];
+  document.getElementById('r1').textContent=`On Board: ${marbles.filter(m=>m.team===0).length}`;
+  document.getElementById('r2').textContent=`Record: ${saveData.record.wins}W - ${saveData.record.losses}L`;
+  document.getElementById('turnInfo').textContent=suddenDeath?'SUDDEN DEATH':`${Math.min(10,moveIdx+1)} / 10`;
+  const spec=getCurrentMarbleSpec();
+  document.getElementById('nextMarble').textContent=spec?`${spec.name} (${spec.val}pt)`:'Match Complete';
+
+  document.getElementById('cardP1').classList.toggle('active-turn',phase==='aim'&&activeTeam===0);
+  document.getElementById('cardP2').classList.toggle('active-turn',phase==='aim'&&activeTeam===1);
+  document.getElementById('cardP2').classList.toggle('p2',phase==='aim'&&activeTeam===1);
+}
+
+// Multi-Marble Physics Simulator for AI
+function simulateFullBoard(vx,vy){
+  const spec=getCurrentMarbleSpec();
+  const cx=W/2,cy=H/2;
+  const minBound=RAIL+R,maxBound=W-RAIL-R;
+  const sim=marbles.map(m=>({
+    x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,val:m.val,touchedByOpp:m.touchedByOpp,isShot:false
+  }));
+
+  if(suddenDeath){
+    const ex=sim.find(m=>m.team===1 && m.val===10);
+    if(ex){ex.x=shooterPos.x;ex.y=shooterPos.y;ex.vx=vx;ex.vy=vy;ex.touchedByOpp=false;ex.isShot=true;}
+    else sim.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:1,val:spec.val,touchedByOpp:false,isShot:true});
+  }else{
+    sim.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:1,val:spec.val,touchedByOpp:false,isShot:true});
+  }
+
+  let p1Void=0,p2Void=0,hitOpp=false;
+  for(let step=0;step<350;step++){
+    let moving=false;
+    for(let i=sim.length-1;i>=0;i--){
+      const m=sim[i];
+      m.x+=m.vx;m.y+=m.vy;
+      m.vx*=0.985;m.vy*=0.985;
+      if(m.x<minBound){m.x=minBound;m.vx=Math.abs(m.vx)*0.82;}
+      if(m.x>maxBound){m.x=maxBound;m.vx=-Math.abs(m.vx)*0.82;}
+      if(m.y<minBound){m.y=minBound;m.vy=Math.abs(m.vy)*0.82;}
+      if(m.y>maxBound){m.y=maxBound;m.vy=-Math.abs(m.vy)*0.82;}
+
+      const dx=cx-m.x,dy=cy-m.y;
+      if(Math.abs(dx)<SLOPE_HALF && Math.abs(dy)<SLOPE_HALF){
+        const d=Math.hypot(dx,dy)||1;
+        m.vx+=(dx/d)*0.22;m.vy+=(dy/d)*0.22;
+      }
+      if(Math.abs(dx)<HOLE_HALF && Math.abs(dy)<HOLE_HALF){
+        if(m.team===0)p1Void+=m.val;
+        else if(m.touchedByOpp||m.team!==1)p2Void+=m.val;
+        else p2Void+=m.val*0.85;
+        sim.splice(i,1);continue;
+      }
+      if(Math.hypot(m.vx,m.vy)>0.08)moving=true;
+      else{m.vx=0;m.vy=0;}
+    }
+    for(let i=0;i<sim.length;i++){
+      for(let j=i+1;j<sim.length;j++){
+        const a=sim[i],b=sim[j];
+        const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+        if(d>0 && d<R*2){
+          if(a.team!==b.team){a.touchedByOpp=true;b.touchedByOpp=true;if(a.isShot||b.isShot)hitOpp=true;}
+          const nx=dx/d,ny=dy/d,ov=(R*2-d)/2;
+          a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+          const dvx=b.vx-a.vx,dvy=b.vy-a.vy,imp=dvx*nx+dvy*ny;
+          if(imp<0){a.vx+=imp*nx*0.92;a.vy+=imp*ny*0.92;b.vx-=imp*nx*0.92;b.vy-=imp*ny*0.92;}
+        }
+      }
+    }
+    if(!moving)break;
+  }
+
+  let score=p1Void*300 - p2Void*850 + (hitOpp?80:0);
+  for(const m of sim){
+    const inSlope=Math.abs(cx-m.x)<SLOPE_HALF && Math.abs(cy-m.y)<SLOPE_HALF;
+    const dist=Math.hypot(cx-m.x,cy-m.y);
+    if(m.team===0){
+      if(inSlope)score+=m.val*45;
+      else if(dist<SLOPE_HALF+35)score+=m.val*15;
+    }else{
+      if(inSlope)score-=m.val*170;
+      else if(dist<SLOPE_HALF+25)score-=m.val*30;
+      else score+=18;
+    }
+  }
+  return score;
+}
+
+function aiShoot(){
+  aiTimer=null;
+  if(phase!=='aim'||!vsAI||activeTeam!==1)return;
+  const targets=marbles.filter(m=>m.team===0);
+  const diff=selectedRival.diff;
+
+  let angles=[],speeds=[],jitter=4,releaseErr=0;
+  if(diff==='easy'){
+    for(let d=125;d<=235;d+=12)angles.push(d*Math.PI/180);
+    targets.forEach(t=>angles.push(Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x)));
+    speeds=[6.2,8.5];jitter=55;releaseErr=0.12;
+  }else if(diff==='medium'){
+    for(let d=115;d<=245;d+=8)angles.push(d*Math.PI/180);
+    targets.forEach(t=>{
+      const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
+      angles.push(a-0.06,a,a+0.06);
+    });
+    speeds=[6.0,8.2,10.8];jitter=22;releaseErr=0.05;
+  }else if(diff==='hard_bank'){
+    for(let d=30;d<=330;d+=6)angles.push(d*Math.PI/180);
+    targets.forEach(t=>{
+      const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
+      angles.push(a-0.08,a-0.04,a,a+0.04,a+0.08);
+    });
+    speeds=[5.8,8.0,10.5,13.0];jitter=6;releaseErr=0.015;
+  }else{
+    for(let d=0;d<360;d+=5)angles.push(d*Math.PI/180);
+    targets.forEach(t=>{
+      const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
+      [-0.16,-0.1,-0.05,0,0.05,0.1,0.16].forEach(o=>angles.push(a+o));
+    });
+    speeds=[5.5,7.2,9.0,10.8,12.5,14.2];jitter=2;releaseErr=0;
+  }
+
+  let bestScore=-Infinity,bestVx=-6.2,bestVy=-3.4;
+  for(const ang of angles){
+    for(const spd of speeds){
+      const vx=Math.cos(ang)*spd,vy=Math.sin(ang)*spd;
+      const s=simulateFullBoard(vx,vy)+(Math.random()-0.5)*jitter;
+      if(s>bestScore){bestScore=s;bestVx=vx;bestVy=vy;}
+    }
+  }
+  if(releaseErr>0){
+    const a=Math.atan2(bestVy,bestVx)+(Math.random()-0.5)*releaseErr;
+    const sp=Math.hypot(bestVx,bestVy);
+    bestVx=Math.cos(a)*sp;bestVy=Math.sin(a)*sp;
+  }
+  launchMarble(bestVx,bestVy);
+}
+
+function launchMarble(vx,vy){
+  playSFX('launch',Math.hypot(vx,vy)/12);
+  const spec=getCurrentMarbleSpec();
+  const shooterName=activeTeam===0?'Gradients':(vsAI?selectedRival.name:'Vectors');
+  addLog(`${shooterName} fires ${spec.name} (${spec.val}pt).`);
+  setReferee(`${shooterName} strikes ${spec.name}!`);
+
+  replayBuffer=[];
+  if(suddenDeath){
+    const ex=marbles.find(m=>m.team===activeTeam && m.val===10);
+    if(ex){ex.x=shooterPos.x;ex.y=shooterPos.y;ex.vx=vx;ex.vy=vy;ex.touchedByOpp=false;}
+    else marbles.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:activeTeam,val:spec.val,spec,touchedByOpp:false});
+  }else{
+    marbles.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:activeTeam,val:spec.val,spec,touchedByOpp:false});
+  }
+  phase='moving';
+  updateHUD();
+}
+
+// Pointer Input & Power Meter
+canvas.addEventListener('pointerdown',e=>{
+  if(phase!=='aim'||isReplaying||(vsAI&&activeTeam===1))return;
+  aiming=true;updateAim(e);
+});
+window.addEventListener('pointermove',e=>{if(aiming)updateAim(e);});
+window.addEventListener('pointerup',()=>{
+  if(!aiming)return;aiming=false;
+  updatePowerUI(0);
+  const dx=aimPos.x-shooterPos.x,dy=aimPos.y-shooterPos.y,dist=Math.hypot(dx,dy);
+  if(dist<15)return;
+  const power=Math.min(15,dist/18);
+  launchMarble((dx/dist)*power,(dy/dist)*power);
+});
+
+function updateAim(e){
+  const rect=canvas.getBoundingClientRect();
+  aimPos={x:(e.clientX-rect.left)*(W/rect.width),y:(e.clientY-rect.top)*(H/rect.height)};
+  const dist=Math.hypot(aimPos.x-shooterPos.x,aimPos.y-shooterPos.y);
+  const power=Math.min(15,dist/18);
+  updatePowerUI(power/15);
+}
+
+function updatePowerUI(ratio){
+  const fill=document.getElementById('powerFill');
+  const tier=document.getElementById('powerTier');
+  fill.style.width=`${Math.round(ratio*100)}%`;
+  if(ratio<=0.02){tier.textContent='READY';tier.style.color='var(--cyan)';}
+  else if(ratio<0.3){tier.textContent='TOUCH';tier.style.color='#22d3ee';}
+  else if(ratio<0.55){tier.textContent='SOFT';tier.style.color='#4ade80';}
+  else if(ratio<0.8){tier.textContent='MEDIUM';tier.style.color='#facc15';}
+  else{tier.textContent='HARD';tier.style.color='#f87171';}
+}
+
+function spawnParticles(x,y,color,count=14){
+  for(let i=0;i<count;i++){
+    const a=Math.random()*Math.PI*2,sp=1+Math.random()*4.2;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,color});
+  }
+}
+
+function stepPhysics(){
+  if(phase!=='moving'||isReplaying)return;
+
+  replayBuffer.push(marbles.map(m=>({...m})));
+  if(replayBuffer.length>90)replayBuffer.shift();
+
+  let anyMoving=false;
+  let bigElimination=false;
+  const cx=W/2,cy=H/2;
+  const minBound=RAIL+R,maxBound=W-RAIL-R;
+
+  for(let i=marbles.length-1;i>=0;i--){
+    const m=marbles[i];
+    m.x+=m.vx;m.y+=m.vy;
+    m.vx*=0.985;m.vy*=0.985;
+
+    let bounced=false;
+    if(m.x<minBound){m.x=minBound;m.vx=Math.abs(m.vx)*0.82;bounced=true;}
+    if(m.x>maxBound){m.x=maxBound;m.vx=-Math.abs(m.vx)*0.82;bounced=true;}
+    if(m.y<minBound){m.y=minBound;m.vy=Math.abs(m.vy)*0.82;bounced=true;}
+    if(m.y>maxBound){m.y=maxBound;m.vy=-Math.abs(m.vy)*0.82;bounced=true;}
+    if(bounced){
+      const sp=Math.hypot(m.vx,m.vy);
+      if(sp>1.4){playSFX('clack',sp/12);spawnParticles(m.x,m.y,'#e9d5ff',5);}
+    }
+
+    const dx=cx-m.x,dy=cy-m.y;
+    if(Math.abs(dx)<SLOPE_HALF && Math.abs(dy)<SLOPE_HALF){
+      const dist=Math.hypot(dx,dy)||1;
+      m.vx+=(dx/dist)*0.22;m.vy+=(dy/dist)*0.22;
+    }
+
+    if(Math.abs(dx)<HOLE_HALF && Math.abs(dy)<HOLE_HALF){
+      playSFX('void',1);
+      shakeTime=14;shakeMag=6;
+      spawnParticles(m.x,m.y,m.spec.color,24);
+
+      const victimTeam=m.team===0?'Gradients':'Vectors';
+      if(m.touchedByOpp || m.team!==activeTeam){
+        scores[1-m.team]+=m.val;
+        const scorer=m.team===0?'Vectors':'Gradients';
+        const msg=`VOID DROP! ${victimTeam}'s ${m.spec.name} falls into the pit (+${m.val} pts to ${scorer})!`;
+        setReferee(msg);addLog(msg);
+        if(m.val>=5)bigElimination=true;
+      }else{
+        const msg=`UNFORCED FALL! ${victimTeam}'s ${m.spec.name} rolls into the Void (0 pts).`;
+        setReferee(msg);addLog(msg);
+      }
+      marbles.splice(i,1);
+      updateHUD();
+      continue;
+    }
+
+    if(Math.hypot(m.vx,m.vy)>0.08)anyMoving=true;
+    else{m.vx=0;m.vy=0;}
+  }
+
+  for(let i=0;i<marbles.length;i++){
+    for(let j=i+1;j<marbles.length;j++){
+      const a=marbles[i],b=marbles[j];
+      const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+      if(d>0 && d<R*2){
+        if(a.team!==b.team){a.touchedByOpp=true;b.touchedByOpp=true;}
+        const nx=dx/d,ny=dy/d,ov=(R*2-d)/2;
+        a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+        const dvx=b.vx-a.vx,dvy=b.vy-a.vy,imp=dvx*nx+dvy*ny;
+        if(imp<0){
+          const intensity=Math.min(1.5,Math.abs(imp)/10);
+          playSFX('clack',intensity);
+          if(Math.abs(imp)>6){shakeTime=8;shakeMag=3.5;}
+          spawnParticles((a.x+b.x)/2,(a.y+b.y)/2,'#fef08a',8);
+          a.vx+=imp*nx*0.92;a.vy+=imp*ny*0.92;
+          b.vx-=imp*nx*0.92;b.vy-=imp*ny*0.92;
+        }
+      }
+    }
+  }
+
+  if(!anyMoving){
+    const finishTurn=()=>{
+      if(suddenDeath){endMatch();return;}
+      moveIdx++;startTurn();
+    };
+    if(bigElimination && replayBuffer.length>15){
+      triggerVoidCam(finishTurn);
+    }else{
+      finishTurn();
+    }
+  }
+}
+
+function triggerVoidCam(cb){
+  isReplaying=true;
+  replayFrames=replayBuffer.slice(-55);
+  replayIdx=0;
+  postReplayCallback=cb;
+  document.getElementById('voidCamBadge').classList.remove('hidden');
+}
+
+function endMatch(){
+  if(scores[0]===scores[1]){
+    if(!suddenDeath){
+      suddenDeath=true;moveIdx=0;
+      spawnSuddenDeathMarbles(true);
+      const msg='TIE SCORE! Sudden Death — Knock out the enemy 10pt Cyan Diamond!';
+      setReferee(msg);addLog(msg);
+      startTurn();return;
+    }else{
+      spawnSuddenDeathMarbles(false);
+      moveIdx++;startTurn();return;
+    }
+  }
+
+  phase='over';
+  const p1Won=scores[0]>scores[1];
+  if(p1Won){
+    saveData.record.wins++;
+    playSFX('win');
+    let earned=15;
+    if(vsAI){
+      earned=selectedRival.reward;
+      if(!saveData.beaten.includes(selectedRival.id))saveData.beaten.push(selectedRival.id);
+    }
+    saveData.shards+=earned;
+    persist();
+    const msg=`VICTORY! Gradients defeat ${vsAI?selectedRival.name:'Vectors'} (${scores[0]}–${scores[1]}) +${earned} ◆`;
+    setReferee(msg);addLog(msg);
+  }else{
+    saveData.record.losses++;
+    playSFX('lose');
+    saveData.shards+=5;
+    persist();
+    const msg=`DEFEAT! ${vsAI?selectedRival.name:'Vectors'} wins (${scores[1]}–${scores[0]}). +5 ◆ consolation.`;
+    setReferee(msg);addLog(msg);
+  }
+  updateHUD();
+}
+
+// Trajectory Raycast Preview
+function getAimPrediction(){
+  const dx=aimPos.x-shooterPos.x,dy=aimPos.y-shooterPos.y,dist=Math.hypot(dx,dy);
+  if(dist<15)return null;
+  const nx=dx/dist,ny=dy/dist;
+  let x=shooterPos.x,y=shooterPos.y;
+  let hitX=x+nx*260,hitY=y+ny*260,bounceX=null,bounceY=null;
+  const minBound=RAIL+R,maxBound=W-RAIL-R;
+
+  for(let step=0;step<280;step+=3){
+    const tx=x+nx*step,ty=y+ny*step;
+    let hitMarble=false;
+    for(const m of marbles){
+      if(Math.hypot(m.x-tx,m.y-ty)<=R*2){
+        hitX=tx;hitY=ty;hitMarble=true;break;
+      }
+    }
+    if(hitMarble)break;
+
+    if(tx<=minBound || tx>=maxBound){
+      hitX=tx;hitY=ty;
+      bounceX=hitX-nx*75;bounceY=hitY+ny*75;
+      break;
+    }
+    if(ty<=minBound || ty>=maxBound){
+      hitX=tx;hitY=ty;
+      bounceX=hitX+nx*75;bounceY=hitY-ny*75;
+      break;
+    }
+  }
+  return {hitX,hitY,bounceX,bounceY,nx,ny,powerRatio:Math.min(1,(dist/18)/15)};
+}
+
+// Draw Tapered Realistic Crimson & Gold Cue Stick (matches game-setup2FINAL_4.jpg)
+function drawTaperedCue(tipX,tipY,buttX,buttY){
+  const dx=buttX-tipX,dy=buttY-tipY;
+  const len=Math.hypot(dx,dy)||1;
+  const ux=dx/len,uy=dy/len;
+  const px=-uy,py=ux; // perpendicular vector
+
+  const tipHalf=2.6;
+  const buttHalf=7.8;
+
+  // Drop shadow on felt
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,0.48)';
+  ctx.beginPath();
+  ctx.moveTo(tipX+px*tipHalf+4,tipY+py*tipHalf+6);
+  ctx.lineTo(buttX+px*buttHalf+4,buttY+py*buttHalf+6);
+  ctx.lineTo(buttX-px*buttHalf+4,buttY-py*buttHalf+6);
+  ctx.lineTo(tipX-px*tipHalf+4,tipY-py*tipHalf+6);
+  ctx.closePath();
+  ctx.fill();
+
+  // Cue Shaft Gradient (Ivory tip -> Gold maple -> Crimson wrap -> Dark butt cap)
+  const grad=ctx.createLinearGradient(tipX,tipY,buttX,buttY);
+  grad.addColorStop(0.00,'#f8fafc');
+  grad.addColorStop(0.05,'#e2e8f0');
+  grad.addColorStop(0.06,'#fde047');
+  grad.addColorStop(0.45,'#f59e0b');
+  grad.addColorStop(0.62,'#dc2626');
+  grad.addColorStop(0.94,'#991b1b');
+  grad.addColorStop(0.95,'#450a0a');
+  grad.addColorStop(1.00,'#1c1917');
+
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.moveTo(tipX+px*tipHalf,tipY+py*tipHalf);
+  ctx.lineTo(buttX+px*buttHalf,buttY+py*buttHalf);
+  ctx.lineTo(buttX-px*buttHalf,buttY-py*buttHalf);
+  ctx.lineTo(tipX-px*tipHalf,tipY-py*tipHalf);
+  ctx.closePath();
+  ctx.fill();
+
+  // Specular cylindrical sheen along the shaft
+  ctx.strokeStyle='rgba(255,255,255,0.35)';
+  ctx.lineWidth=1.4;
+  ctx.beginPath();
+  ctx.moveTo(tipX+px*(tipHalf*0.35),tipY+py*(tipHalf*0.35));
+  ctx.lineTo(buttX+px*(buttHalf*0.35),buttY+py*(buttHalf*0.35));
+  ctx.stroke();
+
+  // Crisp dark outline
+  ctx.strokeStyle='rgba(15,5,25,0.75)';
+  ctx.lineWidth=1;
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Draw 3D Beveled Tabletop, Metallic Ramp, Reserve Racks & Resting Cues
+function drawTable(theme){
+  const cx=W/2,cy=H/2;
+
+  // 1. Outer Mitered Cabinet Frame
+  ctx.fillStyle=theme.railOuter;
+  ctx.fillRect(0,0,W,H);
+
+  // Top & Left bevel highlights, Bottom & Right bevel shadows
+  ctx.fillStyle=theme.railMid;
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(W,0);ctx.lineTo(W-16,16);ctx.lineTo(16,16);ctx.closePath();ctx.fill();
+  ctx.fillStyle=theme.railInner;
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(16,16);ctx.lineTo(16,H-16);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#090312';
+  ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(16,H-16);ctx.lineTo(W-16,H-16);ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#120621';
+  ctx.beginPath();ctx.moveTo(W,0);ctx.lineTo(W,H);ctx.lineTo(W-16,H-16);ctx.lineTo(W-16,16);ctx.closePath();ctx.fill();
+
+  // Inner Cushion Lip
+  ctx.fillStyle=theme.railInner;
+  ctx.fillRect(16,16,W-32,H-32);
+  ctx.strokeStyle='rgba(255,255,255,0.12)';
+  ctx.lineWidth=1.5;
+  ctx.strokeRect(16.5,16.5,W-33,H-33);
+
+  // 2. Woven Felt Playing Surface
+  const feltGrad=ctx.createRadialGradient(cx,cy,60,cx,cy,W*0.65);
+  feltGrad.addColorStop(0,theme.felt);
+  feltGrad.addColorStop(1,theme.feltDark);
+  ctx.fillStyle=feltGrad;
+  ctx.fillRect(RAIL,RAIL,W-RAIL*2,H-RAIL*2);
+
+  if(feltPattern){
+    ctx.fillStyle=feltPattern;
+    ctx.fillRect(RAIL,RAIL,W-RAIL*2,H-RAIL*2);
+  }
+
+  // Deep Inner Cushion Shadow around Felt Perimeter
+  ctx.save();
+  ctx.beginPath();ctx.rect(RAIL,RAIL,W-RAIL*2,H-RAIL*2);ctx.clip();
+  ctx.strokeStyle='rgba(0,0,0,0.65)';
+  ctx.lineWidth=12;
+  ctx.strokeRect(RAIL,RAIL,W-RAIL*2,H-RAIL*2);
+  ctx.restore();
+
+  // 3. Staged Reserve Marble Racks (Top = Vectors 10..1, Bottom = Gradients 1..10, matching game-setup2FINAL_4.jpg)
+  if(phase!=='title' && !suddenDeath){
+    const p1Drafted=Math.floor((moveIdx + (order[0]===0?1:0))/2);
+    const p2Drafted=Math.floor((moveIdx + (order[0]===1?1:0))/2);
+
+    // Top row (Vectors): 10, 5, 3, 2, 1 from left to right
+    for(let idx=0;idx<5;idx++){
+      const rosterIdx=4-idx; // 4=10pt, 3=5pt, 2=3pt, 1=2pt, 0=1pt
+      const rx=cx - 88 + idx*44;
+      const ry=RAIL + 26;
+      // Recessed dimple socket on felt
+      ctx.fillStyle='rgba(0,0,0,0.32)';
+      ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
+
+      if(rosterIdx>=p2Drafted){
+        drawGlossyMarble(rx,ry,ROSTER[rosterIdx],1,true);
+      }
+    }
+
+    // Bottom row (Gradients): 1, 2, 3, 5, 10 from left to right
+    for(let idx=0;idx<5;idx++){
+      const rosterIdx=idx;
+      const rx=cx - 88 + idx*44;
+      const ry=H - RAIL - 26;
+      ctx.fillStyle='rgba(0,0,0,0.32)';
+      ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
+
+      if(rosterIdx>=p1Drafted){
+        drawGlossyMarble(rx,ry,ROSTER[rosterIdx],0,false);
+      }
+    }
+  }
+
+  // 4. Four-Sided 3D Beveled Metallic Funnel Slope (matching game-setup2FINAL_4.jpg)
+  const ox1=cx-SLOPE_HALF,oy1=cy-SLOPE_HALF,ox2=cx+SLOPE_HALF,oy2=cy+SLOPE_HALF;
+  const ix1=cx-HOLE_HALF,iy1=cy-HOLE_HALF,ix2=cx+HOLE_HALF,iy2=cy+HOLE_HALF;
+
+  // Outer drop shadow of the funnel frame
+  ctx.fillStyle='rgba(0,0,0,0.45)';
+  ctx.fillRect(ox1-4,oy1-2,SLOPE_HALF*2+8,SLOPE_HALF*2+8);
+
+  // Top Slope Trapezoid (lit from above)
+  const gTop=ctx.createLinearGradient(cx,oy1,cx,iy1);
+  gTop.addColorStop(0,theme.rampTop);
+  gTop.addColorStop(1,theme.rampRight);
+  ctx.fillStyle=gTop;
+  ctx.beginPath();ctx.moveTo(ox1,oy1);ctx.lineTo(ox2,oy1);ctx.lineTo(ix2,iy1);ctx.lineTo(ix1,iy1);ctx.closePath();ctx.fill();
+
+  // Left Slope Trapezoid
+  const gLeft=ctx.createLinearGradient(ox1,cy,ix1,cy);
+  gLeft.addColorStop(0,theme.rampLeft);
+  gLeft.addColorStop(1,theme.rampBot);
+  ctx.fillStyle=gLeft;
+  ctx.beginPath();ctx.moveTo(ox1,oy1);ctx.lineTo(ix1,iy1);ctx.lineTo(ix1,iy2);ctx.lineTo(ox1,oy2);ctx.closePath();ctx.fill();
+
+  // Right Slope Trapezoid
+  const gRight=ctx.createLinearGradient(ox2,cy,ix2,cy);
+  gRight.addColorStop(0,theme.rampRight);
+  gRight.addColorStop(1,theme.rampBot);
+  ctx.fillStyle=gRight;
+  ctx.beginPath();ctx.moveTo(ox2,oy1);ctx.lineTo(ox2,oy2);ctx.lineTo(ix2,iy2);ctx.lineTo(ix2,iy1);ctx.closePath();ctx.fill();
+
+  // Bottom Slope Trapezoid (in shadow)
+  const gBot=ctx.createLinearGradient(cx,oy2,cx,iy2);
+  gBot.addColorStop(0,theme.rampBot);
+  gBot.addColorStop(1,'#1e293b');
+  ctx.fillStyle=gBot;
+  ctx.beginPath();ctx.moveTo(ox1,oy2);ctx.lineTo(ix1,iy2);ctx.lineTo(ix2,iy2);ctx.lineTo(ox2,oy2);ctx.closePath();ctx.fill();
+
+  // Miter crease lines on the 4 ramp corners
+  ctx.strokeStyle='rgba(15,23,42,0.5)';
+  ctx.lineWidth=1.2;
+  [[ox1,oy1,ix1,iy1],[ox2,oy1,ix2,iy1],[ox2,oy2,ix2,iy2],[ox1,oy2,ix1,iy2]].forEach(([x1,y1,x2,y2])=>{
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  });
+  ctx.strokeStyle='rgba(255,255,255,0.45)';
+  ctx.strokeRect(ox1,oy1,SLOPE_HALF*2,SLOPE_HALF*2);
+
+  // 5. Deep Recessed Abyss Pit & Central Circular Void Hole
+  ctx.fillStyle=theme.pitWall;
+  ctx.fillRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
+
+  // Inner pit depth gradient
+  const pitGrad=ctx.createRadialGradient(cx,cy,VOID_R*0.6,cx,cy,HOLE_HALF*1.35);
+  pitGrad.addColorStop(0,theme.pitCore);
+  pitGrad.addColorStop(1,'rgba(0,0,0,0.65)');
+  ctx.fillStyle=pitGrad;
+  ctx.fillRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
+
+  // Pit bevel rim shadow
+  ctx.strokeStyle='rgba(0,0,0,0.8)';
+  ctx.lineWidth=3;
+  ctx.strokeRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
+
+  // Central Circular Void Hole with glossy inner rim
+  ctx.fillStyle='#020005';
+  ctx.beginPath();ctx.arc(cx,cy,VOID_R,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.22)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(cx,cy,VOID_R,0.2,Math.PI*1.1);ctx.stroke();
+
+  // 6. Resting Side Pool Cues (when not actively held by shooter)
+  const p1Holding=(phase==='aim' && activeTeam===0 && aiming);
+  const p2Holding=(phase==='aim' && activeTeam===1 && aiming);
+  if(!p1Holding){
+    // Left side cue (tip at top, butt at bottom)
+    drawTaperedCue(RAIL+22,RAIL+36,RAIL+32,H-RAIL-36);
+  }
+  if(!p2Holding){
+    // Right side cue (butt at top, tip at bottom)
+    drawTaperedCue(W-RAIL-22,H-RAIL-36,W-RAIL-32,RAIL+36);
+  }
+}
+
+// Render Realistic Glossy Billiard Marble
+function drawGlossyMarble(x,y,spec,team,upsideDown=false){
+  // 1. Soft directional drop shadow onto felt/ramp
+  ctx.fillStyle='rgba(0,0,0,0.52)';
+  ctx.beginPath();ctx.arc(x+3,y+4.5,R,0,Math.PI*2);ctx.fill();
+
+  // 2. 3D Spherical Body Shading
+  const grad=ctx.createRadialGradient(x-R*0.36,y-R*0.36,R*0.08,x,y,R);
+  grad.addColorStop(0.00,spec.hi);
+  grad.addColorStop(0.32,spec.color);
+  grad.addColorStop(0.85,spec.lo);
+  grad.addColorStop(1.00,'#05020a');
+  ctx.fillStyle=grad;
+  ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.fill();
+
+  // 3. Subtle Team Rim Sheen (Cyan vs Gold)
+  ctx.strokeStyle=team===0?'rgba(34,211,238,0.65)':'rgba(250,204,21,0.65)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(x,y,R-0.6,0,Math.PI*2);ctx.stroke();
+
+  // 4. Glossy Studio Specular Highlight (top-left reflection)
+  ctx.fillStyle='rgba(255,255,255,0.45)';
+  ctx.beginPath();
+  ctx.ellipse(x-R*0.35,y-R*0.38,R*0.26,R*0.14,-Math.PI/4,0,Math.PI*2);
+  ctx.fill();
+
+  // 5. Recessed Point Number
+  ctx.save();
+  ctx.translate(x,y);
+  if(upsideDown)ctx.rotate(Math.PI);
+  ctx.fillStyle=spec.num;
+  ctx.font='900 12px system-ui,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(spec.val,0,0.5);
+  ctx.restore();
+}
+
+// Main Render Loop
+function draw(){
+  const theme=THEMES.find(t=>t.id===saveData.activeTheme)||THEMES[0];
+
+  ctx.save();
+  if(shakeTime>0){
+    shakeTime--;
+    ctx.translate((Math.random()-0.5)*shakeMag,(Math.random()-0.5)*shakeMag);
+  }
+
+  ctx.clearRect(0,0,W,H);
+  drawTable(theme);
+
+  // Active Marbles (either live or Void Cam slow-mo)
+  let activeMarbles=marbles;
+  if(isReplaying){
+    const frame=replayFrames[Math.floor(replayIdx)];
+    if(frame)activeMarbles=frame;
+    replayIdx+=0.35;
+    if(replayIdx>=replayFrames.length){
+      isReplaying=false;
+      document.getElementById('voidCamBadge').classList.add('hidden');
+      if(postReplayCallback){const fn=postReplayCallback;postReplayCallback=null;fn();}
+    }
+  }
+
+  // Aiming Trajectory & Active Tapered Cue Stick
+  if(phase==='aim' && !isReplaying){
+    const spec=getCurrentMarbleSpec();
+    const teamColor=activeTeam===0?'#22d3ee':'#facc15';
+    const pulse=21+Math.sin(Date.now()/170)*2.5;
+    ctx.strokeStyle=teamColor;ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.arc(shooterPos.x,shooterPos.y,pulse,0,Math.PI*2);ctx.stroke();
+
+    if(aiming){
+      const pred=getAimPrediction();
+      if(pred){
+        ctx.strokeStyle='rgba(255,255,255,0.5)';
+        ctx.lineWidth=1.8;ctx.setLineDash([5,5]);
+        ctx.beginPath();ctx.moveTo(shooterPos.x,shooterPos.y);ctx.lineTo(pred.hitX,pred.hitY);ctx.stroke();
+        if(pred.bounceX!==null){
+          ctx.strokeStyle='rgba(34,211,238,0.45)';
+          ctx.beginPath();ctx.moveTo(pred.hitX,pred.hitY);ctx.lineTo(pred.bounceX,pred.bounceY);ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.strokeStyle=teamColor;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.arc(pred.hitX,pred.hitY,R,0,Math.PI*2);ctx.stroke();
+
+        // Draw Tapered Cue Pulling Back Behind Shooter Marble
+        const pullBack=24+pred.powerRatio*56;
+        const cueLen=165;
+        const sx=shooterPos.x-pred.nx*pullBack,sy=shooterPos.y-pred.ny*pullBack;
+        const ex=shooterPos.x-pred.nx*(pullBack+cueLen),ey=shooterPos.y-pred.ny*(pullBack+cueLen);
+        drawTaperedCue(sx,sy,ex,ey);
+      }
+    }
+
+    if(spec){
+      drawGlossyMarble(shooterPos.x,shooterPos.y,spec,activeTeam,false);
+    }
+  }
+
+  activeMarbles.forEach(m=>drawGlossyMarble(m.x,m.y,m.spec,m.team,false));
+
+  // Particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;p.y+=p.vy;p.life-=0.035;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=p.life;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+
+  stepPhysics();
+  requestAnimationFrame(draw);
+}
+
+persist();
+draw();
+</script>
+</body>
+</html>
