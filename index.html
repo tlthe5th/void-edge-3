@@ -55,24 +55,27 @@ body{
 .card-score{font-size:1.55rem;font-weight:900;line-height:1.15;margin:2px 0}
 .card-sub{font-size:.72rem;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* Referee Ticker */
+/* Referee Ticker — Fixed height prevents board jumping when text wraps */
 .referee{
   width:100%;background:var(--panel);border:1px solid var(--neon);border-radius:10px;
-  padding:.45rem .85rem;margin-bottom:.55rem;display:flex;align-items:center;gap:.65rem;
-  min-height:46px;box-shadow:0 0 16px rgba(168,85,247,.2);
+  padding:.55rem .85rem;margin-bottom:.55rem;display:flex;align-items:center;gap:.65rem;
+  height:54px;flex-shrink:0;box-shadow:0 0 16px rgba(168,85,247,.2);
 }
 .ref-badge{
   background:var(--neon);color:#fff;font-size:.65rem;font-weight:900;
   padding:.2rem .45rem;border-radius:4px;letter-spacing:.8px;flex-shrink:0;
 }
-.ref-text{font-size:.86rem;font-weight:600;color:#f3e8ff;line-height:1.25}
+.ref-text{
+  font-size:.84rem;font-weight:600;color:#f3e8ff;line-height:1.3;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
 
 /* Canvas Wrapper */
 .stage{
   position:relative;width:100%;max-width:620px;aspect-ratio:1/1;
   border-radius:14px;overflow:hidden;border:3px solid #4c1d95;
   box-shadow:0 18px 45px rgba(0,0,0,.75),0 0 28px rgba(168,85,247,.3);
-  background:#0e051c;
+  background:#0e051c;flex-shrink:0;
 }
 canvas{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
 
@@ -215,13 +218,13 @@ footer a{color:var(--cyan);text-decoration:none}
     </div>
   </div>
 
-  <!-- Live Referee -->
+  <!-- Live Referee (Fixed height container) -->
   <div class="referee">
     <span class="ref-badge">REFEREE</span>
     <div class="ref-text" id="statusBar">Welcome to Void Edge Chronicles 3.0!</div>
   </div>
 
-  <!-- Game Arena (660x660 canvas with exterior marble & cue trays around the 520x520 playing field) -->
+  <!-- Game Arena -->
   <div class="stage" id="stageWrap">
     <div class="void-cam-banner hidden" id="voidCamBadge"><span class="dot"></span> VOID CAM &bull; SLOW-MO REPLAY</div>
     <canvas id="board" width="660" height="660"></canvas>
@@ -325,7 +328,6 @@ footer a{color:var(--cyan);text-decoration:none}
 
 <script>
 const canvas=document.getElementById('board'),ctx=canvas.getContext('2d');
-// W=660 gives a 62px exterior cabinet apron around the 536x536 inner cushioned arena
 const W=660,H=660,APRON=62,RAIL=14,PLAY_MIN=APRON+RAIL,PLAY_MAX=W-APRON-RAIL;
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
@@ -420,26 +422,23 @@ let replayFrames=[];
 let replayIdx=0;
 let postReplayCallback=null;
 
-// Audio Engine (Fixed Track 2: Abyss Drift so all 3 tracks are rich and clearly audible)
+// Audio Engine
 let audioCtx=null,jukeboxTrack=0,musicTimeout=null;
 const TRACK_NAMES=['OFF','1: Void Chase','2: Abyss Drift','3: Neon Duel'];
 const TRACKS=[
   [],
-  // Track 1: Void Chase (Fast Arpeggio)
   [
     {f:220.00,d:120,w:'sawtooth',g:0.048},{f:329.63,d:120,w:'sawtooth',g:0.048},
     {f:440.00,d:120,w:'sawtooth',g:0.048},{f:523.25,d:120,w:'sawtooth',g:0.048},
     {f:440.00,d:120,w:'sawtooth',g:0.048},{f:329.63,d:120,w:'sawtooth',g:0.048},
     {f:493.88,d:120,w:'sawtooth',g:0.048},{f:329.63,d:120,w:'sawtooth',g:0.048}
   ],
-  // Track 2: Abyss Drift (Warm Mid-Range Synthwave Pulse — audible & rich)
   [
     {f:293.66,d:210,w:'triangle',g:0.085},{f:349.23,d:210,w:'triangle',g:0.085},
     {f:440.00,d:210,w:'triangle',g:0.085},{f:523.25,d:210,w:'triangle',g:0.085},
     {f:493.88,d:210,w:'triangle',g:0.085},{f:440.00,d:210,w:'triangle',g:0.085},
     {f:349.23,d:210,w:'triangle',g:0.085},{f:329.63,d:210,w:'triangle',g:0.085}
   ],
-  // Track 3: Neon Duel
   [
     {f:196.00,d:140,w:'sawtooth',g:0.048},{f:293.66,d:140,w:'sawtooth',g:0.048},
     {f:392.00,d:140,w:'sawtooth',g:0.048},{f:466.16,d:140,w:'sawtooth',g:0.048},
@@ -529,7 +528,6 @@ function stepJukebox(i){
       g.gain.exponentialRampToValueAtTime(0.001,now+dur*0.9);
       o.start(now);o.stop(now+dur);
 
-      // Subtle octave harmonic layer on Track 2 so it sounds full & atmospheric
       if(jukeboxTrack===2){
         const o2=c.createOscillator(),g2=c.createGain();
         o2.type='sine';
@@ -1139,20 +1137,16 @@ function drawTaperedCue(tipX,tipY,buttX,buttY){
   ctx.restore();
 }
 
-// Draw 3D Beveled Tabletop with Exterior Cue Gutters & Exterior Reserve Marble Trays
+// Draw 3D Beveled Tabletop
 function drawTable(theme){
   const cx=W/2,cy=H/2;
 
-  // 1. Exterior Cabinet Apron (holds the exterior marble trays and resting cue racks)
   ctx.fillStyle=theme.apron;
   ctx.fillRect(0,0,W,H);
 
-  // Subtle recessed trays outside top, bottom, left, and right rails
   ctx.fillStyle=theme.tray;
-  // Top & Bottom marble reserve trays
   ctx.beginPath();ctx.roundRect(cx-122,12,244,42,10);ctx.fill();
   ctx.beginPath();ctx.roundRect(cx-122,H-54,244,42,10);ctx.fill();
-  // Left & Right cue resting gutters
   ctx.beginPath();ctx.roundRect(14,APRON+10,36,H-(APRON+10)*2,8);ctx.fill();
   ctx.beginPath();ctx.roundRect(W-50,APRON+10,36,H-(APRON+10)*2,8);ctx.fill();
 
@@ -1161,7 +1155,6 @@ function drawTable(theme){
   ctx.strokeRect(cx-122,12,244,42);
   ctx.strokeRect(cx-122,H-54,244,42);
 
-  // 2. Raised Mitered Cushion Rails surrounding the active playing field (APRON to W-APRON)
   const bSize=W-APRON*2;
   ctx.fillStyle=theme.railOuter;
   ctx.fillRect(APRON,APRON,bSize,bSize);
@@ -1178,7 +1171,6 @@ function drawTable(theme){
   ctx.lineWidth=1.5;
   ctx.strokeRect(APRON+0.5,APRON+0.5,bSize-1,bSize-1);
 
-  // 3. Woven Felt Playing Surface (inside PLAY_MIN .. PLAY_MAX)
   const playW=PLAY_MAX-PLAY_MIN;
   const feltGrad=ctx.createRadialGradient(cx,cy,60,cx,cy,playW*0.65);
   feltGrad.addColorStop(0,theme.felt);
@@ -1191,7 +1183,6 @@ function drawTable(theme){
     ctx.fillRect(PLAY_MIN,PLAY_MIN,playW,playW);
   }
 
-  // Deep Inner Cushion Shadow around Felt Perimeter
   ctx.save();
   ctx.beginPath();ctx.rect(PLAY_MIN,PLAY_MIN,playW,playW);ctx.clip();
   ctx.strokeStyle='rgba(0,0,0,0.68)';
@@ -1199,12 +1190,10 @@ function drawTable(theme){
   ctx.strokeRect(PLAY_MIN,PLAY_MIN,playW,playW);
   ctx.restore();
 
-  // 4. Exterior Staged Reserve Marble Trays (Right OUTSIDE the top and bottom rails!)
   if(!suddenDeath){
     const p1Drafted=phase==='title'?0:Math.floor((moveIdx + (order[0]===0?1:0))/2);
     const p2Drafted=phase==='title'?0:Math.floor((moveIdx + (order[0]===1?1:0))/2);
 
-    // Top exterior tray (Vectors): 10, 5, 3, 2, 1 from left to right
     for(let idx=0;idx<5;idx++){
       const rosterIdx=4-idx;
       const rx=cx - 88 + idx*44;
@@ -1217,7 +1206,6 @@ function drawTable(theme){
       }
     }
 
-    // Bottom exterior tray (Gradients): 1, 2, 3, 5, 10 from left to right
     for(let idx=0;idx<5;idx++){
       const rosterIdx=idx;
       const rx=cx - 88 + idx*44;
@@ -1231,7 +1219,6 @@ function drawTable(theme){
     }
   }
 
-  // 5. Four-Sided 3D Beveled Metallic Funnel Slope
   const ox1=cx-SLOPE_HALF,oy1=cy-SLOPE_HALF,ox2=cx+SLOPE_HALF,oy2=cy+SLOPE_HALF;
   const ix1=cx-HOLE_HALF,iy1=cy-HOLE_HALF,ix2=cx+HOLE_HALF,iy2=cy+HOLE_HALF;
 
@@ -1266,7 +1253,6 @@ function drawTable(theme){
   ctx.strokeStyle='rgba(255,255,255,0.45)';
   ctx.strokeRect(ox1,oy1,SLOPE_HALF*2,SLOPE_HALF*2);
 
-  // 6. Deep Recessed Abyss Pit & Central Circular Void Hole
   ctx.fillStyle=theme.pitWall;
   ctx.fillRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
 
@@ -1286,7 +1272,6 @@ function drawTable(theme){
   ctx.lineWidth=1.5;
   ctx.beginPath();ctx.arc(cx,cy,VOID_R,0.2,Math.PI*1.1);ctx.stroke();
 
-  // 7. Exterior Resting Pool Cues (Right OUTSIDE the left and right rails!)
   const p1Holding=(phase==='aim' && activeTeam===0 && aiming);
   const p2Holding=(phase==='aim' && activeTeam===1 && aiming);
   if(!p1Holding){
@@ -1354,7 +1339,6 @@ function draw(){
     }
   }
 
-  // Aiming Trajectory & Active Tapered Cue Stick
   if(phase==='aim' && !isReplaying){
     const spec=getCurrentMarbleSpec();
     const teamColor=activeTeam===0?'#22d3ee':'#facc15';
@@ -1376,7 +1360,6 @@ function draw(){
         ctx.strokeStyle=teamColor;ctx.lineWidth=1.5;
         ctx.beginPath();ctx.arc(pred.hitX,pred.hitY,R,0,Math.PI*2);ctx.stroke();
 
-        // Draw Tapered Cue Pulling Back Behind Shooter Marble
         const pullBack=24+pred.powerRatio*56;
         const cueLen=165;
         const sx=shooterPos.x-pred.nx*pullBack,sy=shooterPos.y-pred.ny*pullBack;
@@ -1392,7 +1375,6 @@ function draw(){
 
   activeMarbles.forEach(m=>drawGlossyMarble(m.x,m.y,m.spec,m.team,false));
 
-  // Particles
   for(let i=particles.length-1;i>=0;i--){
     const p=particles[i];
     p.x+=p.vx;p.y+=p.vy;p.life-=0.035;
