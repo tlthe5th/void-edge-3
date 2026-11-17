@@ -394,6 +394,10 @@ let PLAY_MIN_Y=APRON+RAIL,PLAY_MAX_Y=H-APRON-RAIL;
 
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
+// Balanced Rolling Friction (exact midpoint between 0.985 and 0.976)
+const FELT_DAMPING=0.9805;
+const STOP_SPEED=0.11;
+
 // Bumper Pool Geometry:
 // - BP_R = 14px ball radius (28px diameter)
 // - BP_POCKET_R = 13.4px cup radius (tighter than the ball, requires clean controlled entry!)
@@ -418,7 +422,6 @@ function syncTableDimensions(){
   PLAY_MAX_Y=H-APRON-RAIL;
 
   const cx=W/2,cy=H/2;
-  // 25px from end cushion -> 12.5px gap from post edge to rail (impossible for a 28px ball to pass behind!)
   const leftPkX=PLAY_MIN_X+25;
   const rightPkX=PLAY_MAX_X-25;
   BP_POCKETS=[
@@ -942,7 +945,6 @@ function setupBumperPoolBalls(){
   const leftPkX=BP_POCKETS[0].x;
   const rightPkX=BP_POCKETS[1].x;
 
-  // Marked leader balls spot directly in front of each pocket; remaining 4 balls line up along the guard row
   const redLayout=[
     {x:leftPkX+34,y:cy,seq:0,isLeader:true},
     {x:leftPkX,y:cy+72,seq:1,isLeader:false},
@@ -974,9 +976,9 @@ function getNextInLineBall(team){
 function computeCpuLagShot(ball){
   const leftPocket=BP_POCKETS[0];
   const railY=(Math.random()<0.5)?(PLAY_MIN_Y+BP_R):(PLAY_MAX_Y-BP_R);
-  const bankX=leftPocket.x + 28 + (Math.random()*24-12);
+  const bankX=leftPocket.x + 24 + (Math.random()*24-12);
   const ang=Math.atan2(railY-ball.y,bankX-ball.x);
-  const spd=11.2 + (Math.random()*1.2);
+  const spd=10.4 + (Math.random()*1.2);
   return {vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd};
 }
 
@@ -1030,11 +1032,11 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
           if(aiming){
             aiming=false;updatePowerUI(0);
             const dx=aimPos.x-shooterPos.x,dy=aimPos.y-shooterPos.y,dist=Math.hypot(dx,dy);
-            const pwr=dist>=15?Math.min(15,dist/18):11.2;
+            const pwr=dist>=15?Math.min(15,dist/18):10.4;
             const ang=dist>=15?Math.atan2(dy,dx):-0.26;
             bpLagShots[0]={vx:Math.cos(ang)*pwr,vy:Math.sin(ang)*pwr};
           }else{
-            bpLagShots[0]={vx:Math.cos(-0.26)*11.2,vy:Math.sin(-0.26)*11.2};
+            bpLagShots[0]={vx:Math.cos(-0.26)*10.4,vy:Math.sin(-0.26)*10.4};
           }
         }
         fireSimultaneousLagShots();
@@ -1212,7 +1214,7 @@ function simulateFullBoardVoid(vx,vy){
     for(let i=sim.length-1;i>=0;i--){
       const m=sim[i];
       m.x+=m.vx;m.y+=m.vy;
-      m.vx*=0.976;m.vy*=0.976;
+      m.vx*=FELT_DAMPING;m.vy*=FELT_DAMPING;
       if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.82;}
       if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.82;}
       if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.82;}
@@ -1229,7 +1231,7 @@ function simulateFullBoardVoid(vx,vy){
         else p2Void+=m.val*0.85;
         sim.splice(i,1);continue;
       }
-      if(Math.hypot(m.vx,m.vy)>0.14)moving=true;
+      if(Math.hypot(m.vx,m.vy)>STOP_SPEED)moving=true;
       else{m.vx=0;m.vy=0;}
     }
     for(let i=0;i<sim.length;i++){
@@ -1274,31 +1276,31 @@ function aiShootVoid(){
   if(diff==='easy'){
     for(let d=125;d<=235;d+=12)angles.push(d*Math.PI/180);
     targets.forEach(t=>angles.push(Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x)));
-    speeds=[6.8,9.2];jitter=55;releaseErr=0.12;
+    speeds=[6.5,8.8];jitter=55;releaseErr=0.12;
   }else if(diff==='medium'){
     for(let d=115;d<=245;d+=8)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       angles.push(a-0.06,a,a+0.06);
     });
-    speeds=[6.6,9.0,11.6];jitter=22;releaseErr=0.05;
+    speeds=[6.3,8.6,11.2];jitter=22;releaseErr=0.05;
   }else if(diff==='hard_bank'){
     for(let d=30;d<=330;d+=6)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       angles.push(a-0.08,a-0.04,a,a+0.04,a+0.08);
     });
-    speeds=[6.4,8.8,11.4,14.0];jitter=6;releaseErr=0.015;
+    speeds=[6.1,8.4,11.0,13.5];jitter=6;releaseErr=0.015;
   }else{
     for(let d=0;d<360;d+=5)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       [-0.16,-0.1,-0.05,0,0.05,0.1,0.16].forEach(o=>angles.push(a+o));
     });
-    speeds=[6.2,8.0,10.0,11.8,13.5,15.0];jitter=2;releaseErr=0;
+    speeds=[5.8,7.6,9.5,11.4,13.2,14.8];jitter=2;releaseErr=0;
   }
 
-  let bestScore=-Infinity,bestVx=-6.8,bestVy=-3.4;
+  let bestScore=-Infinity,bestVx=-6.5,bestVy=-3.4;
   for(const ang of angles){
     for(const spd of speeds){
       const vx=Math.cos(ang)*spd,vy=Math.sin(ang)*spd;
@@ -1314,7 +1316,7 @@ function aiShootVoid(){
   launchShot(bestVx,bestVy);
 }
 
-// Bumper Pool AI Simulator — matches heavier felt friction (`0.976`), tight pocket (`13.4`), & sealed guard posts!
+// Bumper Pool AI Simulator — synchronized with balanced `FELT_DAMPING = 0.9805` & tight pocket (`13.4`)
 function simulateBumperShot(ballIdx,vx,vy){
   const minX=PLAY_MIN_X+BP_R,maxX=PLAY_MAX_X-BP_R;
   const minY=PLAY_MIN_Y+BP_R,maxY=PLAY_MAX_Y-BP_R;
@@ -1331,12 +1333,12 @@ function simulateBumperShot(ballIdx,vx,vy){
   let shooterRailHits=0;
   let shooterBlockedEarly=false;
 
-  for(let step=0;step<280;step++){
+  for(let step=0;step<300;step++){
     let moving=false;
     for(const m of sim){
       if(m.sunk)continue;
       m.x+=m.vx;m.y+=m.vy;
-      m.vx*=0.976;m.vy*=0.976;
+      m.vx*=FELT_DAMPING;m.vy*=FELT_DAMPING;
 
       let railHit=false;
       if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;railHit=true;}
@@ -1383,7 +1385,7 @@ function simulateBumperShot(ballIdx,vx,vy){
         }
       }
 
-      if(!m.sunk && Math.hypot(m.vx,m.vy)>0.14)moving=true;
+      if(!m.sunk && Math.hypot(m.vx,m.vy)>STOP_SPEED)moving=true;
       else{m.vx=0;m.vy=0;}
     }
 
@@ -1460,7 +1462,7 @@ function aiShootBumperPool(){
     // 4. Full 360-degree sweep
     for(let d=0;d<360;d+=6)angleSet.add(d*Math.PI/180);
 
-    const speeds=[7.0,9.4,11.8,14.2];
+    const speeds=[6.7,9.0,11.2,13.5];
 
     for(const ang of angleSet){
       for(const spd of speeds){
@@ -1617,8 +1619,8 @@ function stepPhysics(){
     const m=marbles[i];
     if(m.sunk)continue;
     m.x+=m.vx;m.y+=m.vy;
-    // Realistic wool-cloth felt rolling resistance (0.976 per frame)
-    m.vx*=0.976;m.vy*=0.976;
+    // Balanced wool-cloth felt rolling resistance (midpoint 0.9805)
+    m.vx*=FELT_DAMPING;m.vy*=FELT_DAMPING;
 
     let bounced=false;
     if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;bounced=true;}
@@ -1735,7 +1737,7 @@ function stepPhysics(){
       }
     }
 
-    if(!m.sunk && Math.hypot(m.vx,m.vy)>0.14)anyMoving=true;
+    if(!m.sunk && Math.hypot(m.vx,m.vy)>STOP_SPEED)anyMoving=true;
     else{m.vx=0;m.vy=0;}
   }
 
