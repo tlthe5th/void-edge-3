@@ -374,7 +374,7 @@ footer a{color:var(--cyan);text-decoration:none}
         <strong style="color:var(--gold);font-size:.9rem">MODE B: OFFICIAL BUMPER POOL RULES</strong><br>
         &bull; <b>Simultaneous Opening Bank Break:</b> Both players bank their marked cue ball off a side rail toward their target pocket on the count of 3. Whoever sinks their ball—or stops closest to their target pocket—keeps the board as-is and shoots next with their next ball in line!<br>
         &bull; <b>Tie Shootout (Both Sink Simultaneously):</b> If both players sink their ball at the same time on the count of 3, each spots their next ball in line (starting to the right of the opponent's goal) and shoots simultaneously on 3 again until one misses!<br>
-        &bull; <b>Marked Ball First &amp; Penalties:</b> You must sink your marked cue ball first. Sinking another ball early, or dropping your own ball in the wrong cup, awards your opponent 2 free pocketed balls!
+        &bull; <b>Bumper Caroms &amp; Penalties:</b> Use the 12 rubber bumper posts and rails to bank around blockers. Sinking another ball before your marked ball, or dropping your own ball in the wrong cup, awards your opponent 2 free pocketed balls!
       </div>
     </div>
     <div style="text-align:center;margin-top:1rem">
@@ -444,8 +444,8 @@ const ROSTER=[
 const RIVALS=[
   {id:'kael',name:'Kael the Drifter',short:'Kael',tier:'Novice',diff:'easy',reward:25,desc:'Cautious perimeter shooter. Leaves openings near the center.'},
   {id:'lyra',name:'Lyra of the Rim',short:'Lyra',tier:'Tactician',diff:'medium',reward:45,desc:'Controls outer lanes and punishes exposed balls.'},
-  {id:'vespera',name:'Vespera',short:'Vespera',tier:'Bank Specialist',diff:'hard_bank',reward:70,desc:'Calculates cushion bank angles to snipe shielded targets.'},
-  {id:'architect',name:'The Void Architect',short:'Architect',tier:'Grand Champion',diff:'master',reward:120,desc:'Full multi-ball physics simulation. Ruthless & unforgiving.'}
+  {id:'vespera',name:'Vespera',short:'Vespera',tier:'Bank Specialist',diff:'hard_bank',reward:70,desc:'Calculates cushion & bumper bank angles to snipe shielded targets.'},
+  {id:'architect',name:'The Void Architect',short:'Architect',tier:'Grand Champion',diff:'master',reward:120,desc:'Full multi-ball & bumper carom physics simulation. Ruthless & unforgiving.'}
 ];
 
 const THEMES=[
@@ -716,7 +716,7 @@ function setGameType(type){
   document.getElementById('overlayLogo').textContent=isVoid?'VOID EDGE 3.0':'BUMPER POOL';
   document.getElementById('overlayTag').textContent=isVoid
     ?'Five Tiers of Warriors. One Gravity Abyss.'
-    :'Simultaneous 3-2-1 Bank Break. Tight Pockets. Official Rules.';
+    :'Simultaneous 3-2-1 Bank Break. Tight Pockets. Bumper Carom AI.';
   document.getElementById('p1Name').textContent=isVoid?'GRADIENTS (LEFT)':'HOME RED (LEFT)';
   document.getElementById('p2Name').textContent=vsAI?selectedRival.name.toUpperCase():(isVoid?'VECTORS (RIGHT)':'AWAY WHITE (RIGHT)');
   updateHUD();
@@ -938,21 +938,16 @@ function setupBumperPoolBalls(){
   const leftX=PLAY_MIN_X+26;
   const rightX=PLAY_MAX_X-26;
 
-  // Ordered sequence of balls for each team:
-  // seq 0 = Marked Leader Ball (in front of pocket)
-  // seq 1..4 = Remaining balls starting with the ball to the right of the opponent's goal!
-  // For Home Red (Left, facing Right pocket): "right" of opponent's goal = bottom side (+Y), then top side (-Y)
-  // For Away White (Right, facing Left pocket): "right" of opponent's goal = top side (-Y), then bottom side (+Y)
   const redLayout=[
-    {x:leftX+34,y:cy,seq:0,isLeader:true},     // Marked cue ball
-    {x:leftX,y:cy+78,seq:1,isLeader:false},   // Next in line (to right of target goal)
+    {x:leftX+34,y:cy,seq:0,isLeader:true},
+    {x:leftX,y:cy+78,seq:1,isLeader:false},
     {x:leftX,y:cy+118,seq:2,isLeader:false},
     {x:leftX,y:cy-78,seq:3,isLeader:false},
     {x:leftX,y:cy-118,seq:4,isLeader:false}
   ];
   const whiteLayout=[
-    {x:rightX-34,y:cy,seq:0,isLeader:true},   // Marked cue ball
-    {x:rightX,y:cy-78,seq:1,isLeader:false},  // Next in line (to right of target goal)
+    {x:rightX-34,y:cy,seq:0,isLeader:true},
+    {x:rightX,y:cy-78,seq:1,isLeader:false},
     {x:rightX,y:cy-118,seq:2,isLeader:false},
     {x:rightX,y:cy+78,seq:3,isLeader:false},
     {x:rightX,y:cy+118,seq:4,isLeader:false}
@@ -971,10 +966,8 @@ function getNextInLineBall(team){
   return unsunk[0]||null;
 }
 
-// Compute calibrated CPU bank shot from `ball` toward Left Pocket (`BP_POCKETS[0]`)
 function computeCpuLagShot(ball){
   const leftPocket=BP_POCKETS[0];
-  // Aim at top or bottom cushion near left pocket so it banks into or right beside the cup
   const railY=(Math.random()<0.5)?(PLAY_MIN_Y+BP_R):(PLAY_MAX_Y-BP_R);
   const bankX=leftPocket.x + 18 + (Math.random()*22-11);
   const ang=Math.atan2(railY-ball.y,bankX-ball.x);
@@ -988,8 +981,6 @@ function startBumperPoolMatch(){
   startBumperPoolSimultaneousRound(false);
 }
 
-// Starts either Round 0 (Opening Bank Break with marked balls)
-// or Round 1+ (Tie-breaker when both players sink their ball simultaneously on the count of 3!)
 function startBumperPoolSimultaneousRound(isTieBreaker){
   clearTimers();
   const p1Ball=getNextInLineBall(0);
@@ -998,8 +989,6 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
   if(!p1Ball){finishGame(0);return;}
   if(!p2Ball){finishGame(1);return;}
 
-  // Official rule: If both marked balls are pocketed on first shots, each player takes the next ball
-  // in line (starting to the right of their opponent's goal), spots it in front of the pocket, and shoots on 3!
   if(isTieBreaker){
     p1Ball.x=PLAY_MIN_X+60;p1Ball.y=H/2;p1Ball.vx=0;p1Ball.vy=0;
     p2Ball.x=PLAY_MAX_X-60;p2Ball.y=H/2;p2Ball.vx=0;p2Ball.vy=0;
@@ -1075,10 +1064,9 @@ function fireSimultaneousLagShots(){
 function resolveBumperPoolLag(){
   const p1Ball=bpLagBalls[0];
   const p2Ball=bpLagBalls[1];
-  const p1Target=BP_POCKETS[1]; // Home Red (Left) shoots at Right Pocket
-  const p2Target=BP_POCKETS[0]; // CPU / Away White (Right) shoots at Left Pocket
+  const p1Target=BP_POCKETS[1];
+  const p2Target=BP_POCKETS[0];
 
-  // Check if either or both sank their shot in their target pocket!
   const p1Scored=(p1Ball.sunk && p1Ball._sunkInTarget===true);
   const p2Scored=(p2Ball.sunk && p2Ball._sunkInTarget===true);
 
@@ -1087,7 +1075,6 @@ function resolveBumperPoolLag(){
   if(p1Remaining===0){finishGame(0);return;}
   if(p2Remaining===0){finishGame(1);return;}
 
-  // Case 1: BOTH players sank their ball on the count of 3 -> Spot next ball in line and shoot on 3 again!
   if(p1Scored && p2Scored){
     bpLagRound++;
     const msg='BOTH PLAYERS SANK THEIR BALL! Spotting next ball in line (right of opponent\'s goal) — shoot on 3 again!';
@@ -1097,7 +1084,6 @@ function resolveBumperPoolLag(){
     return;
   }
 
-  // Case 2: Only ONE player sank their ball -> Balls stay where they lie, and that player shoots next!
   if(p1Scored || p2Scored){
     activeTeam=p1Scored?0:1;
     const winnerName=activeTeam===0?'Home Red (Left)':(vsAI?selectedRival.name:'Away White (Right)');
@@ -1107,7 +1093,6 @@ function resolveBumperPoolLag(){
     return;
   }
 
-  // Case 3: Neither sank it -> Balls stay where they lie, closest ball to target pocket shoots first!
   const d1=(p1Ball.sunk)?9999:Math.hypot(p1Ball.x-p1Target.x,p1Ball.y-p1Target.y);
   const d2=(p2Ball.sunk)?9999:Math.hypot(p2Ball.x-p2Target.x,p2Ball.y-p2Target.y);
 
@@ -1137,7 +1122,7 @@ function startBumperTurn(customMsg=null,preferNextInLine=false){
   const pName=activeTeam===0?'Home Red (Left)':(vsAI?selectedRival.name:'Away White (Right)');
   const mustLeader=leader?' (Must sink marked Leader Ball first!)':' (Click any of your balls or drag to shoot)';
   if(vsAI && activeTeam===1){
-    setReferee(customMsg||`${pName} is aiming ${selectedBall.isLeader?'Marked Leader Ball':'White Ball'}...`);
+    setReferee(customMsg||`${pName} is lining up a bumper carom shot...`);
     aiTimer=setTimeout(aiShootBumperPool,850);
   }else{
     setReferee(customMsg||`${pName}'s Turn${mustLeader}`);
@@ -1157,7 +1142,6 @@ function spotBallOnCenter(ball){
   ball.x=W/2;ball.y=H/2;
 }
 
-// Official Bumper Pool Penalty: Opponent gets 2 of their own balls dropped into their cup!
 function awardOpponentTwoBalls(offendingTeam,reasonText){
   const benefactor=1-offendingTeam;
   const candidates=marbles.filter(m=>m.team===benefactor && !m.sunk).sort((a,b)=>a.seq-b.seq);
@@ -1211,7 +1195,7 @@ function updateHUD(){
 }
 
 // ==========================================
-// AI ENGINES (VOID EDGE & BUMPER POOL)
+// AI ENGINES (VOID EDGE & BUMPER-CAROM BUMPER POOL)
 // ==========================================
 function simulateFullBoardVoid(vx,vy){
   const spec=getCurrentMarbleSpec();
@@ -1338,29 +1322,39 @@ function aiShootVoid(){
   launchShot(bestVx,bestVy);
 }
 
-// Bumper Pool AI Simulator (Accounts for tight pocket lip-out physics)
+// Bumper Pool AI Simulator — actively calculates Bumper Post Caroms & Rail Banks!
 function simulateBumperShot(ballIdx,vx,vy){
   const minX=PLAY_MIN_X+BP_R,maxX=PLAY_MAX_X-BP_R;
   const minY=PLAY_MIN_Y+BP_R,maxY=PLAY_MAX_Y-BP_R;
-  const sim=marbles.map(m=>({x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,isLeader:m.isLeader,sunk:m.sunk}));
+  const sim=marbles.map((m,i)=>({
+    x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,isLeader:m.isLeader,sunk:m.sunk,isShooter:(i===ballIdx)
+  }));
   sim[ballIdx].vx=vx;sim[ballIdx].vy=vy;
 
-  const targetPocket=BP_POCKETS[0];
-  const ownPocket=BP_POCKETS[1];
+  const targetPocket=BP_POCKETS[0]; // Left pocket is CPU target
+  const ownPocket=BP_POCKETS[1];    // Right pocket is CPU home pocket
   const hadLeader=sim.some(m=>m.team===1 && m.isLeader && !m.sunk);
 
   let score=0;
-  for(let step=0;step<300;step++){
+  let shooterBumperHits=0;
+  let shooterRailHits=0;
+  let shooterBlockedEarly=false;
+
+  for(let step=0;step<320;step++){
     let moving=false;
     for(const m of sim){
       if(m.sunk)continue;
       m.x+=m.vx;m.y+=m.vy;
       m.vx*=0.985;m.vy*=0.985;
-      if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;}
-      if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.84;}
-      if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.84;}
-      if(m.y>maxY){m.y=maxY;m.vy=-Math.abs(m.vy)*0.84;}
 
+      let railHit=false;
+      if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;railHit=true;}
+      if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.84;railHit=true;}
+      if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.84;railHit=true;}
+      if(m.y>maxY){m.y=maxY;m.vy=-Math.abs(m.vy)*0.84;railHit=true;}
+      if(railHit && m.isShooter)shooterRailHits++;
+
+      // Bumper Post Collisions
       for(const bp of BP_BUMPERS){
         const dx=m.x-bp.x,dy=m.y-bp.y,d=Math.hypot(dx,dy);
         if(d>0 && d<BP_R+BP_POST_R){
@@ -1368,10 +1362,14 @@ function simulateBumperShot(ballIdx,vx,vy){
           m.x=bp.x+nx*(BP_R+BP_POST_R);
           m.y=bp.y+ny*(BP_R+BP_POST_R);
           const vn=m.vx*nx+m.vy*ny;
-          if(vn<0){m.vx-=1.85*vn*nx;m.vy-=1.85*vn*ny;}
+          if(vn<0){
+            m.vx-=1.85*vn*nx;m.vy-=1.85*vn*ny;
+            if(m.isShooter)shooterBumperHits++;
+          }
         }
       }
 
+      // Tight Pocket Cup vs Rim Lip-Out Physics
       for(const pk of BP_POCKETS){
         const pdx=pk.x-m.x,pdy=pk.y-m.y,pdist=Math.hypot(pdx,pdy);
         const spd=Math.hypot(m.vx,m.vy);
@@ -1379,14 +1377,23 @@ function simulateBumperShot(ballIdx,vx,vy){
           m.sunk=true;
           if(pk===targetPocket){
             if(m.team===1){
-              if(hadLeader && !m.isLeader)score-=850;
-              else score+=1500;
-            }else score-=120;
-          }else score-=900;
+              if(hadLeader && !m.isLeader)score-=1100;
+              else{
+                // Huge reward for sinking, plus bonus if banked off a bumper post or cushion!
+                score+=1800 + (shooterBumperHits>0?220:0) + (shooterRailHits>0?120:0);
+              }
+            }else{
+              // Sinking an opponent's ball helps clear blockers near the pocket
+              score+=110;
+            }
+          }else{
+            // Sinking own ball in own pocket is a foul!
+            score-=1200;
+          }
         }else if(pdist<BP_POCKET_R+1.2 && pdist>0.1){
           const nx=pdx/pdist,ny=pdy/pdist;
           m.vx+=nx*0.38;m.vy+=ny*0.38;
-          if(spd>8.2){m.vx+=-ny*0.75;m.vy+=nx*0.75;}
+          if(spd>8.2){m.vx+=-ny*0.76;m.vy+=nx*0.76;}
         }
       }
 
@@ -1400,6 +1407,7 @@ function simulateBumperShot(ballIdx,vx,vy){
         const a=sim[i],b=sim[j];
         const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
         if(d>0 && d<BP_R*2){
+          if((a.isShooter||b.isShooter) && step<28)shooterBlockedEarly=true;
           const nx=dx/d,ny=dy/d,ov=(BP_R*2-d)/2;
           a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
           const dvx=b.vx-a.vx,dvy=b.vy-a.vy,imp=dvx*nx+dvy*ny;
@@ -1410,14 +1418,21 @@ function simulateBumperShot(ballIdx,vx,vy){
     if(!moving)break;
   }
 
-  for(const m of sim){
-    if(m.sunk)continue;
-    const dist=Math.hypot(m.x-targetPocket.x,m.y-targetPocket.y);
-    if(m.team===1){
-      if(!hadLeader || m.isLeader)score+=(650-dist)*0.85;
+  // Evaluate final board position: reward parking close to Left Pocket & using bumpers to get around blockers!
+  const shooter=sim[ballIdx];
+  if(!shooter.sunk){
+    const dist=Math.hypot(shooter.x-targetPocket.x,shooter.y-targetPocket.y);
+    score+=(680-dist)*1.15;
+    // Extra positioning bonus if the ball is on the left half of the table near the pocket mouth
+    if(shooter.x < targetPocket.x + 115 && Math.abs(shooter.y - targetPocket.y) < 75){
+      score+=180;
     }
+    // Reward clean bumper-carom positioning that bypasses central blockers
+    if(shooterBumperHits>0 && !shooterBlockedEarly)score+=75;
+    if(shooterBlockedEarly)score-=140;
   }
-  return score;
+
+  return {score,usedBumper:(shooterBumperHits>0),usedRail:(shooterRailHits>0)};
 }
 
 function aiShootBumperPool(){
@@ -1428,33 +1443,66 @@ function aiShootBumperPool(){
   const candidates=leader?[leader]:myBalls;
 
   const targetPocket=BP_POCKETS[0];
-  let bestScore=-Infinity,bestBall=candidates[0],bestVx=-7,bestVy=0;
+  let bestScore=-Infinity,bestBall=candidates[0],bestVx=-7,bestVy=0,bestUsedBumper=false;
 
   for(const b of candidates){
     const idx=marbles.indexOf(b);
-    const baseAng=Math.atan2(targetPocket.y-b.y,targetPocket.x-b.x);
-    const angles=[baseAng,baseAng-0.12,baseAng+0.12,baseAng-0.25,baseAng+0.25];
-    for(let d=115;d<=245;d+=12)angles.push(d*Math.PI/180);
-    const speeds=[5.8,8.2,10.2];
+    const angleSet=new Set();
 
-    for(const ang of angles){
+    // 1. Direct target pocket angles
+    const baseAng=Math.atan2(targetPocket.y-b.y,targetPocket.x-b.x);
+    [-0.18,-0.09,-0.04,0,0.04,0.09,0.18].forEach(o=>angleSet.add(baseAng+o));
+
+    // 2. Targeted Bumper-Post Carom Angles (aiming at the grazing edges of every bumper post!)
+    for(const bp of BP_BUMPERS){
+      const dx=bp.x-b.x,dy=bp.y-b.y,d=Math.hypot(dx,dy);
+      if(d>BP_R+BP_POST_R+2){
+        const centerAng=Math.atan2(dy,dx);
+        const tangentOffset=Math.asin(Math.min(0.95,(BP_R+BP_POST_R)/d));
+        [-1.15,-0.85,-0.5,0,0.5,0.85,1.15].forEach(mult=>{
+          angleSet.add(centerAng + tangentOffset*mult);
+        });
+      }
+    }
+
+    // 3. Top & Bottom Cushion Mirror-Bank Angles into the Left Pocket
+    const topMirrorY=2*(PLAY_MIN_Y+BP_R)-targetPocket.y;
+    const botMirrorY=2*(PLAY_MAX_Y-BP_R)-targetPocket.y;
+    [topMirrorY,botMirrorY].forEach(my=>{
+      const bankAng=Math.atan2(my-b.y,targetPocket.x-b.x);
+      [-0.08,-0.04,0,0.04,0.08].forEach(o=>angleSet.add(bankAng+o));
+    });
+
+    // 4. Full 360-degree sweep so backward/side-rail bumper banks are never missed
+    for(let d=0;d<360;d+=6)angleSet.add(d*Math.PI/180);
+
+    const speeds=[6.4,8.6,10.6,12.8];
+
+    for(const ang of angleSet){
       for(const spd of speeds){
         const vx=Math.cos(ang)*spd,vy=Math.sin(ang)*spd;
-        const sc=simulateBumperShot(idx,vx,vy)+(Math.random()-0.5)*15;
-        if(sc>bestScore){bestScore=sc;bestBall=b;bestVx=vx;bestVy=vy;}
+        const res=simulateBumperShot(idx,vx,vy);
+        const sc=res.score+(Math.random()-0.5)*10;
+        if(sc>bestScore){
+          bestScore=sc;
+          bestBall=b;
+          bestVx=vx;
+          bestVy=vy;
+          bestUsedBumper=res.usedBumper;
+        }
       }
     }
   }
 
   selectedBall=bestBall;
   shooterPos={x:selectedBall.x,y:selectedBall.y};
-  launchShot(bestVx,bestVy);
+  launchShot(bestVx,bestVy,bestUsedBumper);
 }
 
 // ==========================================
 // SHOT LAUNCH & INPUT
 // ==========================================
-function launchShot(vx,vy){
+function launchShot(vx,vy,usedBumperHint=false){
   playSFX('launch',Math.hypot(vx,vy)/12);
   replayBuffer=[];
 
@@ -1474,8 +1522,9 @@ function launchShot(vx,vy){
   }else{
     const shooterName=activeTeam===0?'Home Red':(vsAI?selectedRival.name:'Away White');
     selectedBall.vx=vx;selectedBall.vy=vy;
-    addLog(`${shooterName} shoots ${selectedBall.isLeader?'Marked Leader Ball':'ball'}.`);
-    setReferee(`${shooterName} fires!`);
+    const shotStyle=usedBumperHint?'banks off a bumper post!':'fires!';
+    addLog(`${shooterName} shoots ${selectedBall.isLeader?'Marked Leader Ball':'ball'}${usedBumperHint?' (bumper carom)':''}.`);
+    setReferee(`${shooterName} ${shotStyle}`);
   }
   phase='moving';
   updateHUD();
@@ -1535,7 +1584,7 @@ window.addEventListener('pointerup',()=>{
     return;
   }
 
-  launchShot(vx,vy);
+  launchShot(vx,vy,false);
 });
 
 function updateAim(e){
@@ -1646,7 +1695,6 @@ function stepPhysics(){
         const pdist=Math.hypot(pdx,pdy);
         const spd=Math.hypot(m.vx,m.vy);
 
-        // Ball only drops when center is well inside the tight cup and speed is controlled
         if(pdist<BP_POCKET_R*0.56 && spd<10.5){
           shakeTime=10;shakeMag=4;
           spawnParticles(pk.x,pk.y,pk.color,20);
@@ -1680,7 +1728,6 @@ function stepPhysics(){
               playSFX('void',1);
               const remainingBefore=marbles.filter(x=>x.team===m.team && !x.sunk).length;
               if(remainingBefore===0){
-                // Official Rule: Sinking your final ball into your opponent's cup loses the game!
                 const msg=`FINAL BALL IN WRONG CUP! ${teamLabel} forfeits the game!`;
                 setReferee(msg);addLog(msg);
                 finishGame(1-m.team);
@@ -1692,7 +1739,6 @@ function stepPhysics(){
           updateHUD();
           break;
         }else if(pdist<BP_POCKET_R+1.2 && pdist>0.1){
-          // Tight pocket lip gravity + tangential swirl so off-center/fast hits loop around and spin out!
           const nx=pdx/pdist,ny=pdy/pdist;
           m.vx+=nx*0.38;
           m.vy+=ny*0.38;
@@ -1847,8 +1893,14 @@ function getAimPrediction(){
 
     if(gameType==='bumper'){
       for(const bp of BP_BUMPERS){
-        if(Math.hypot(bp.x-tx,bp.y-ty)<=rad+BP_POST_R){
-          hitX=tx;hitY=ty;hitObj=true;break;
+        const bdx=tx-bp.x,bdy=ty-bp.y,bd=Math.hypot(bdx,bdy);
+        if(bd<=rad+BP_POST_R && bd>0){
+          hitX=tx;hitY=ty;
+          const bnx=bdx/bd,bny=bdy/bd;
+          const dot=nx*bnx+ny*bny;
+          const rx=nx-2*dot*bnx,ry=ny-2*dot*bny;
+          bounceX=hitX+rx*85;bounceY=hitY+ry*85;
+          hitObj=true;break;
         }
       }
       if(hitObj)break;
@@ -2188,7 +2240,7 @@ function draw(){
         ctx.lineWidth=1.8;ctx.setLineDash([5,5]);
         ctx.beginPath();ctx.moveTo(shooterPos.x,shooterPos.y);ctx.lineTo(pred.hitX,pred.hitY);ctx.stroke();
         if(pred.bounceX!==null){
-          ctx.strokeStyle='rgba(34,211,238,0.45)';
+          ctx.strokeStyle='rgba(34,211,238,0.55)';
           ctx.beginPath();ctx.moveTo(pred.hitX,pred.hitY);ctx.lineTo(pred.bounceX,pred.bounceY);ctx.stroke();
         }
         ctx.setLineDash([]);
