@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Void Edge Chronicles 3.0 — Realistic Tabletop Edition</title>
+<title>Void Edge Chronicles 3.0 &amp; Bumper Pool — Tabletop Edition</title>
 <style>
 :root{
   --bg:#06030e;--panel:#120926;--panel2:#1b0f38;--neon:#a855f7;--cyan:#22d3ee;
@@ -21,23 +21,30 @@ body{
 /* Top Brand Bar */
 .topbar{
   width:100%;display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:.5rem;padding:0 .25rem;
+  margin-bottom:.5rem;padding:0 .25rem;gap:.5rem;flex-wrap:wrap;
 }
 .brand h1{
-  margin:0;font-size:1.45rem;letter-spacing:1.5px;font-weight:900;
+  margin:0;font-size:1.35rem;letter-spacing:1.2px;font-weight:900;
   background:linear-gradient(90deg,#fff,#e9d5ff,#facc15);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.brand .sub{color:#c084fc;font-size:.75rem;letter-spacing:.4px}
+.brand .sub{color:#c084fc;font-size:.74rem;letter-spacing:.3px}
+.top-right{display:flex;align-items:center;gap:.45rem}
+.mode-pill{
+  background:#1c0e3d;border:1px solid var(--neon);border-radius:999px;
+  padding:.32rem .75rem;font-size:.76rem;font-weight:800;color:var(--cyan);
+  cursor:pointer;display:flex;align-items:center;gap:.35rem;
+}
+.mode-pill:hover{background:#291459}
 .wallet{
   background:var(--panel);border:1px solid var(--border);border-radius:999px;
-  padding:.35rem .8rem;display:flex;align-items:center;gap:.45rem;
-  font-size:.82rem;font-weight:700;color:var(--gold);box-shadow:0 0 12px rgba(250,204,21,.15);
+  padding:.32rem .75rem;display:flex;align-items:center;gap:.4rem;
+  font-size:.8rem;font-weight:700;color:var(--gold);box-shadow:0 0 12px rgba(250,204,21,.15);
 }
 
 /* Scoreboard HUD */
 .hud{
-  display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:.6rem;
+  display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:.6rem;
   width:100%;margin-bottom:.55rem;
 }
 .card{
@@ -51,11 +58,11 @@ body{
 .card.active-turn.p2{
   border-color:var(--gold);box-shadow:0 0 14px rgba(250,204,21,.28);
 }
-.card-label{font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
-.card-score{font-size:1.55rem;font-weight:900;line-height:1.15;margin:2px 0}
+.card-label{font-size:.7rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.card-score{font-size:1.5rem;font-weight:900;line-height:1.15;margin:2px 0}
 .card-sub{font-size:.72rem;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* Referee Ticker — Fixed height prevents board jumping when text wraps */
+/* Referee Ticker */
 .referee{
   width:100%;background:var(--panel);border:1px solid var(--neon);border-radius:10px;
   padding:.55rem .85rem;margin-bottom:.55rem;display:flex;align-items:center;gap:.65rem;
@@ -98,11 +105,11 @@ canvas{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
 
 /* Controls */
 .controls{
-  display:flex;gap:.5rem;margin-top:.65rem;flex-wrap:wrap;justify-content:center;width:100%;
+  display:flex;gap:.45rem;margin-top:.65rem;flex-wrap:wrap;justify-content:center;width:100%;
 }
 button{
-  background:var(--neon);color:#fff;border:none;padding:.52rem .95rem;
-  border-radius:8px;font-weight:700;cursor:pointer;font-size:.84rem;
+  background:var(--neon);color:#fff;border:none;padding:.5rem .88rem;
+  border-radius:8px;font-weight:700;cursor:pointer;font-size:.82rem;
   transition:transform .08s,opacity .15s,background .15s;
 }
 button:hover{opacity:.92}
@@ -113,7 +120,7 @@ button.gold{background:linear-gradient(135deg,#eab308,#ca8a04);color:#090514;fon
 
 /* Overlays & Modals */
 .overlay{
-  position:absolute;inset:0;background:rgba(10,4,22,.88);backdrop-filter:blur(6px);
+  position:absolute;inset:0;background:rgba(10,4,22,.9);backdrop-filter:blur(6px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:1.25rem;z-index:20;text-align:center;
 }
@@ -128,15 +135,36 @@ button.gold{background:linear-gradient(135deg,#eab308,#ca8a04);color:#090514;fon
 }
 .hidden{display:none!important}
 
-/* Title Menu */
+/* Title Menu Switcher */
+.mode-switch{
+  display:grid;grid-template-columns:1fr 1fr;gap:.4rem;
+  background:#090414;padding:.35rem;border-radius:10px;border:1px solid var(--border);
+  width:100%;max-width:330px;margin-bottom:.75rem;
+}
+.switch-btn{
+  padding:.52rem .6rem;border-radius:7px;font-size:.8rem;font-weight:800;
+  background:transparent;color:var(--muted);border:none;cursor:pointer;
+}
+.switch-btn.active{
+  background:var(--neon);color:#fff;box-shadow:0 0 12px rgba(168,85,247,.4);
+}
+.series-switch{
+  display:flex;gap:.45rem;justify-content:center;margin-bottom:.85rem;font-size:.78rem;
+}
+.series-chip{
+  padding:.3rem .75rem;border-radius:999px;background:#1a0e36;border:1px solid var(--border);
+  color:#cbd5e1;cursor:pointer;font-weight:700;
+}
+.series-chip.active{border-color:var(--gold);color:var(--gold);background:#26144d}
+
 .title-logo{
-  font-size:2rem;font-weight:900;letter-spacing:2px;margin:0;
+  font-size:1.85rem;font-weight:900;letter-spacing:1.5px;margin:0;
   background:linear-gradient(90deg,#22d3ee,#fff,#facc15);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.title-tag{color:#c084fc;font-size:.85rem;margin:.25rem 0 1.1rem}
-.menu-grid{display:grid;grid-template-columns:1fr;gap:.55rem;width:100%;max-width:300px}
-.menu-grid button{padding:.7rem 1rem;font-size:.95rem}
+.title-tag{color:#c084fc;font-size:.82rem;margin:.2rem 0 .85rem}
+.menu-grid{display:grid;grid-template-columns:1fr;gap:.5rem;width:100%;max-width:310px}
+.menu-grid button{padding:.65rem 1rem;font-size:.9rem}
 
 /* Rival Cards & Shop */
 .rival-list{display:flex;flex-direction:column;gap:.55rem;margin:.85rem 0;text-align:left}
@@ -191,11 +219,16 @@ footer a{color:var(--cyan);text-decoration:none}
 <div class="app">
   <div class="topbar">
     <div class="brand">
-      <h1>VOID EDGE CHRONICLES 3.0</h1>
+      <h1 id="mainHeaderTitle">VOID EDGE CHRONICLES 3.0</h1>
       <div class="sub">Realistic Tabletop Edition &bull; Created by Thomas Richards</div>
     </div>
-    <div class="wallet" title="Earn Void Shards by winning matches and scoring style knockouts">
-      <span>&#9670;</span> <span id="shardCount">0</span> Shards
+    <div class="top-right">
+      <button class="mode-pill" onclick="toggleGameRuleMode()" id="headerModeToggle" title="Switch between Void Edge 3.0 and Classic Bumper Pool">
+        &#8644; <span id="headerModeText">Void Edge 3.0</span>
+      </button>
+      <div class="wallet" title="Earn Void Shards by winning matches">
+        <span>&#9670;</span> <span id="shardCount">0</span>
+      </div>
     </div>
   </div>
 
@@ -207,21 +240,21 @@ footer a{color:var(--cyan);text-decoration:none}
       <div class="card-sub" id="r1">On Board: 0</div>
     </div>
     <div class="card">
-      <div class="card-label" style="color:var(--gold)" id="matchModeLabel">CHRONICLES</div>
-      <div class="card-score" id="turnInfo" style="font-size:1.25rem;color:#e9d5ff">1 / 10</div>
+      <div class="card-label" style="color:var(--gold)" id="matchModeLabel">SINGLE GAME</div>
+      <div class="card-score" id="turnInfo" style="font-size:1.18rem;color:#e9d5ff">SHOT 1 / 10</div>
       <div class="card-sub" id="nextMarble" style="color:var(--cyan)">White Scout (1pt)</div>
     </div>
     <div class="card" id="cardP2">
       <div class="card-label" style="color:var(--gold)" id="p2Name">VECTORS (CPU)</div>
       <div class="card-score" id="s2">0</div>
-      <div class="card-sub" id="r2">Record: 0 - 0</div>
+      <div class="card-sub" id="r2">Career: 0W - 0L</div>
     </div>
   </div>
 
-  <!-- Live Referee (Fixed height container) -->
+  <!-- Live Referee -->
   <div class="referee">
     <span class="ref-badge">REFEREE</span>
-    <div class="ref-text" id="statusBar">Welcome to Void Edge Chronicles 3.0!</div>
+    <div class="ref-text" id="statusBar">Welcome to Void Edge Chronicles 3.0 &amp; Bumper Pool!</div>
   </div>
 
   <!-- Game Arena -->
@@ -231,14 +264,27 @@ footer a{color:var(--cyan);text-decoration:none}
 
     <!-- Title Overlay -->
     <div class="overlay" id="titleOverlay">
-      <h2 class="title-logo">VOID EDGE 3.0</h2>
-      <p class="title-tag">Five Tiers of Warriors. One Gravity Abyss.</p>
+      <h2 class="title-logo" id="overlayLogo">VOID EDGE 3.0</h2>
+      <p class="title-tag" id="overlayTag">Five Tiers of Warriors. One Gravity Abyss.</p>
+
+      <!-- Dual Game Selector -->
+      <div class="mode-switch">
+        <button class="switch-btn active" id="btnModeVoid" onclick="setGameType('void')">Void Edge 3.0</button>
+        <button class="switch-btn" id="btnModeBumper" onclick="setGameType('bumper')">Bumper Pool</button>
+      </div>
+
+      <!-- Series Length Selector -->
+      <div class="series-switch">
+        <span class="series-chip active" id="chipSingle" onclick="setSeriesLength(1)">Single Game</span>
+        <span class="series-chip" id="chipBo3" onclick="setSeriesLength(3)">Best of 3 Series</span>
+      </div>
+
       <div class="menu-grid">
-        <button class="gold" onclick="openChroniclesModal()">&#9876; Play Chronicles (Campaign)</button>
+        <button class="gold" onclick="openChroniclesModal()">&#9876; Chronicles Ladder (vs AI)</button>
         <button onclick="startQuickMatch(true)">&#9889; Quick Match vs CPU</button>
         <button class="alt" onclick="startQuickMatch(false)">&#128101; 2-Player Local Pass &amp; Play</button>
         <button class="alt" onclick="openShopModal()">&#9670; Table &amp; Funnel Finishes</button>
-        <button class="alt" onclick="openRulesModal()">&#128214; How to Play (Interactive)</button>
+        <button class="alt" onclick="openRulesModal()">&#128214; How to Play (Both Modes)</button>
       </div>
     </div>
   </div>
@@ -253,10 +299,11 @@ footer a{color:var(--cyan);text-decoration:none}
   <!-- Bottom Controls -->
   <div class="controls">
     <button class="alt" onclick="showTitle()">&#8962; Menu</button>
-    <button onclick="resetMatch()">&#8635; Rematch</button>
+    <button onclick="resetMatch(true)">&#8635; New Match</button>
+    <button class="alt" onclick="toggleGameRuleMode()" id="quickModeBtn">&#8644; Mode: Void Edge</button>
     <button class="alt" onclick="openChroniclesModal()" id="rivalBtn">Rival: Architect</button>
     <button class="alt" onclick="cycleJukebox()" id="musicBtn">&#9835; Jukebox: OFF</button>
-    <button class="alt" onclick="toggleLog()" id="logBtn">&#128220; Shot Log</button>
+    <button class="alt" onclick="toggleLog()" id="logBtn">&#128220; Log</button>
   </div>
 
   <!-- Collapsible Shot Log -->
@@ -275,7 +322,7 @@ footer a{color:var(--cyan);text-decoration:none}
   </footer>
 </div>
 
-<!-- Coin Toss Modal -->
+<!-- Coin Toss Modal (Void Edge) -->
 <div class="modal hidden" id="coinModal">
   <div class="modal-card">
     <h2 style="margin-top:0;color:var(--gold)">&#129689; Initiative Coin Toss</h2>
@@ -291,7 +338,7 @@ footer a{color:var(--cyan);text-decoration:none}
 <div class="modal hidden" id="chroniclesModal">
   <div class="modal-card">
     <h2 style="margin-top:0;color:var(--gold)">&#9876; The Chronicles Ladder</h2>
-    <p style="font-size:.82rem;color:#cbd5e1;margin-top:-.4rem">Defeat each Void Master to earn Void Shards and claim the Abyss Crown.</p>
+    <p style="font-size:.82rem;color:#cbd5e1;margin-top:-.4rem">Challenge any Void Master in Void Edge 3.0 or Classic Bumper Pool.</p>
     <div class="rival-list" id="rivalList"></div>
     <div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem">
       <button class="gold" onclick="launchSelectedRival()">Challenge Selected Rival</button>
@@ -304,7 +351,7 @@ footer a{color:var(--cyan);text-decoration:none}
 <div class="modal hidden" id="shopModal">
   <div class="modal-card">
     <h2 style="margin-top:0;color:var(--cyan)">&#9670; Table &amp; Funnel Finishes</h2>
-    <p style="font-size:.8rem;color:#cbd5e1;margin-top:-.4rem">Unlock custom cabinet woods, felt cloths, and funnel metals using your Void Shards.</p>
+    <p style="font-size:.8rem;color:#cbd5e1;margin-top:-.4rem">Unlock custom cabinet woods, felt cloths, and metal finishes using your Void Shards.</p>
     <div class="shop-grid" id="shopGrid"></div>
     <button class="alt" onclick="closeModals()">Back to Table</button>
   </div>
@@ -313,14 +360,21 @@ footer a{color:var(--cyan);text-decoration:none}
 <!-- How to Play Modal -->
 <div class="modal hidden" id="rulesModal">
   <div class="modal-card" style="text-align:left">
-    <h2 style="margin-top:0;color:var(--cyan);text-align:center">&#128214; Void Edge 3.0 Field Manual</h2>
-    <div style="font-size:.84rem;color:#e2e8f0;line-height:1.5;display:flex;flex-direction:column;gap:.65rem">
-      <div><strong style="color:var(--gold)">1. Exterior Reserve Trays:</strong> Each team drafts 5 marbles from their outer tray in escalating value: <b>White (1pt)</b>, <b>Yellow (2pt)</b>, <b>Red (3pt)</b>, <b>Green (5pt)</b>, and <b>Cyan Heavy Diamond (10pt)</b>.</div>
-      <div><strong style="color:var(--cyan)">2. The Beveled Gravity Funnel:</strong> Marbles rolling onto the 4-sided sloped ramp are pulled inward toward the central Void hole.</div>
-      <div><strong style="color:var(--green)">3. Touch-Rule Scoring:</strong> You score points whenever an opponent's marble drops into the Void—or when your own marble knocks an enemy in. Dropping your own untouched marble into the pit awards 0 points!</div>
-      <div><strong style="color:var(--red)">4. Sudden Death &amp; Void Cam:</strong> Tied after 10 shots? Both teams spawn 10pt Cyan Diamonds for sudden-death knockout rounds. High-value eliminations trigger slow-mo <b>Void Cam</b> replays.</div>
+    <h2 style="margin-top:0;color:var(--cyan);text-align:center">&#128214; Dual-Mode Field Manual</h2>
+    <div style="font-size:.83rem;color:#e2e8f0;line-height:1.5;display:flex;flex-direction:column;gap:.75rem">
+      <div style="background:#190c33;padding:.65rem;border-radius:8px;border-left:3px solid var(--cyan)">
+        <strong style="color:var(--cyan);font-size:.9rem">MODE A: VOID EDGE CHRONICLES 3.0</strong><br>
+        &bull; <b>10-Shot Match:</b> Each team drafts 5 escalating marbles (1pt, 2pt, 3pt, 5pt, 10pt) from their exterior tray.<br>
+        &bull; <b>Gravity Funnel &amp; Touch Rule:</b> Knock enemy marbles into the central Void pit to score their points. Dropping your own untouched marble in awards 0 points. Tied after 10 shots? Sudden Death 10pt Diamonds!
+      </div>
+      <div style="background:#190c33;padding:.65rem;border-radius:8px;border-left:3px solid var(--gold)">
+        <strong style="color:var(--gold);font-size:.9rem">MODE B: CLASSIC BUMPER POOL</strong><br>
+        &bull; <b>3-2-1 Bank Shootout (Lag):</b> At game start, a 3-2-1 countdown fires both players' lead balls off the far rail toward the opponent's goal. Closest ball to the target pocket shoots first!<br>
+        &bull; <b>Leader Ball First:</b> Each team has 5 balls (Red vs. White). You <b>must</b> sink your gold-ringed <b>Leader Ball</b> into your opponent's goal pocket before sinking your other 4 balls.<br>
+        &bull; <b>Bonus Turns &amp; Spotting:</b> Sink your own ball in the opponent's goal to shoot again! Sinking an opponent's ball spots it onto the center dot.
+      </div>
     </div>
-    <div style="text-align:center;margin-top:1.1rem">
+    <div style="text-align:center;margin-top:1rem">
       <button onclick="closeModals()">Got It</button>
     </div>
   </div>
@@ -331,6 +385,25 @@ const canvas=document.getElementById('board'),ctx=canvas.getContext('2d');
 const W=660,H=660,APRON=62,RAIL=14,PLAY_MIN=APRON+RAIL,PLAY_MAX=W-APRON-RAIL;
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
+// Bumper Pool Geometry
+const BP_R=14.5,BP_POCKET_R=23,BP_POST_R=13;
+const BP_POCKETS=[
+  {x:W/2,y:PLAY_MIN+32,owner:1,color:'#facc15',label:'P1 TARGET'}, // Top pocket (P1 shoots into this)
+  {x:W/2,y:PLAY_MAX-32,owner:0,color:'#22d3ee',label:'P2 TARGET'}  // Bottom pocket (P2 shoots into this)
+];
+// Classic 12-post Bumper Pool central cross/diamond layout
+const BP_BUMPERS=[
+  // Top pocket guard ring
+  {x:W/2-44,y:PLAY_MIN+68},{x:W/2+44,y:PLAY_MIN+68},
+  // Bottom pocket guard ring
+  {x:W/2-44,y:PLAY_MAX-68},{x:W/2+44,y:PLAY_MAX-68},
+  // Central diamond cluster
+  {x:W/2,y:H/2-62},{x:W/2,y:H/2+62},
+  {x:W/2-62,y:H/2},{x:W/2+62,y:H/2},
+  {x:W/2-34,y:H/2-34},{x:W/2+34,y:H/2-34},
+  {x:W/2-34,y:H/2+34},{x:W/2+34,y:H/2+34}
+];
+
 const ROSTER=[
   {name:'White Scout',val:1,color:'#f1f5f9',hi:'#ffffff',lo:'#64748b',num:'#0f172a'},
   {name:'Yellow Skirmisher',val:2,color:'#eab308',hi:'#fef08a',lo:'#713f12',num:'#0f172a'},
@@ -340,15 +413,15 @@ const ROSTER=[
 ];
 
 const RIVALS=[
-  {id:'kael',name:'Kael the Drifter',tier:'Novice',diff:'easy',reward:25,desc:'Cautious perimeter shooter. Leaves openings near the funnel.'},
-  {id:'lyra',name:'Lyra of the Rim',tier:'Tactician',diff:'medium',reward:45,desc:'Controls outer lanes and punishes exposed marbles.'},
-  {id:'vespera',name:'Vespera',tier:'Bank Specialist',diff:'hard_bank',reward:70,desc:'Calculates cushion angles to snipe shielded targets.'},
-  {id:'architect',name:'The Void Architect',tier:'Grand Champion',diff:'master',reward:120,desc:'Full multi-marble physics simulation. Ruthless & unforgiving.'}
+  {id:'kael',name:'Kael the Drifter',short:'Kael',tier:'Novice',diff:'easy',reward:25,desc:'Cautious perimeter shooter. Leaves openings near the center.'},
+  {id:'lyra',name:'Lyra of the Rim',short:'Lyra',tier:'Tactician',diff:'medium',reward:45,desc:'Controls outer lanes and punishes exposed balls.'},
+  {id:'vespera',name:'Vespera',short:'Vespera',tier:'Bank Specialist',diff:'hard_bank',reward:70,desc:'Calculates cushion bank angles to snipe shielded targets.'},
+  {id:'architect',name:'The Void Architect',short:'Architect',tier:'Grand Champion',diff:'master',reward:120,desc:'Full multi-ball physics simulation. Ruthless & unforgiving.'}
 ];
 
 const THEMES=[
   {
-    id:'royal',name:'Royal Violet & Chrome (Classic)',cost:0,
+    id:'royal',name:'Royal Violet & Chrome',cost:0,
     apron:'#110521',tray:'#090214',railOuter:'#240c42',railInner:'#431975',
     felt:'#3b1266',feltDark:'#230940',
     rampTop:'#f1f5f9',rampLeft:'#cbd5e1',rampRight:'#94a3b8',rampBot:'#64748b',
@@ -390,7 +463,7 @@ for(let y=0;y<128;y++){
 }
 const feltPattern=ctx.createPattern(feltCanvas,'repeat');
 
-// Persistent Save Data for 3.0
+// Persistent Save Data
 let saveData={
   shards:0,
   beaten:[],
@@ -407,13 +480,23 @@ function persist(){
   document.getElementById('shardCount').textContent=saveData.shards;
 }
 
-// Game State
+// Game & Series State
+let gameType='void'; // 'void' | 'bumper'
+let seriesMax=1;     // 1 = Single Game, 3 = Best of 3
+let seriesWins=[0,0];
+let gameNum=1;
+
 let selectedRival=RIVALS[3];
 let marbles=[],particles=[],scores=[0,0],moveIdx=0,order=[0,1],activeTeam=0;
 let phase='title',vsAI=true,suddenDeath=false,aiming=false;
 let aimPos={x:W/2,y:H/2},shooterPos={x:PLAY_MIN+R+8,y:H/2},aiTimer=null;
 let shakeTime=0,shakeMag=0;
 let shotLogs=[];
+
+// Bumper Pool Specific State
+let selectedBall=null;
+let bpLagTimer=null,bpLagCountdown=0,bpLagBalls=[];
+let bpScoredOwnThisTurn=false;
 
 // Void Cam Replay State
 let replayBuffer=[];
@@ -464,7 +547,13 @@ function playSFX(type,intensity=1){
     osc.connect(gain);gain.connect(c.destination);
     const vol=Math.min(0.24,Math.max(0.04,0.14*intensity));
 
-    if(type==='launch'){
+    if(type==='beep'){
+      osc.type='sine';
+      osc.frequency.setValueAtTime(intensity>1?880:520,now);
+      gain.gain.setValueAtTime(0.16,now);
+      gain.gain.exponentialRampToValueAtTime(0.005,now+0.12);
+      osc.start(now);osc.stop(now+0.12);
+    }else if(type==='launch'){
       osc.type='sine';
       osc.frequency.setValueAtTime(160,now);
       osc.frequency.exponentialRampToValueAtTime(520,now+0.13);
@@ -542,13 +631,41 @@ function stepJukebox(i){
   musicTimeout=setTimeout(()=>stepJukebox(i+1),note.d);
 }
 
+// Mode & Series Switching
+function setGameType(type){
+  gameType=type;
+  const isVoid=(type==='void');
+  document.getElementById('btnModeVoid').classList.toggle('active',isVoid);
+  document.getElementById('btnModeBumper').classList.toggle('active',!isVoid);
+  document.getElementById('headerModeText').textContent=isVoid?'Void Edge 3.0':'Bumper Pool';
+  document.getElementById('quickModeBtn').textContent=isVoid?'⇄ Mode: Void Edge':'⇄ Mode: Bumper Pool';
+  document.getElementById('mainHeaderTitle').textContent=isVoid?'VOID EDGE CHRONICLES 3.0':'BUMPER POOL: VOID EDITION';
+  document.getElementById('overlayLogo').textContent=isVoid?'VOID EDGE 3.0':'BUMPER POOL';
+  document.getElementById('overlayTag').textContent=isVoid
+    ?'Five Tiers of Warriors. One Gravity Abyss.'
+    :'3-2-1 Bank Shootout. 12 Posts. Leader Ball First.';
+  updateHUD();
+}
+
+function toggleGameRuleMode(){
+  setGameType(gameType==='void'?'bumper':'void');
+  if(phase!=='title')resetMatch(true);
+}
+
+function setSeriesLength(len){
+  seriesMax=len;
+  document.getElementById('chipSingle').classList.toggle('active',len===1);
+  document.getElementById('chipBo3').classList.toggle('active',len===3);
+  updateHUD();
+}
+
 // UI & Navigation
 function setReferee(msg){
   document.getElementById('statusBar').textContent=msg;
 }
 function addLog(msg){
   shotLogs.unshift(msg);
-  if(shotLogs.length>25)shotLogs.pop();
+  if(shotLogs.length>30)shotLogs.pop();
   document.getElementById('logCount').textContent=`${shotLogs.length} events`;
   const ul=document.getElementById('logList');
   ul.innerHTML=shotLogs.map(t=>`<li>${t}</li>`).join('');
@@ -560,12 +677,16 @@ function closeModals(){
   document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
 }
 function showTitle(){
-  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  clearTimers();
   isReplaying=false;
   document.getElementById('voidCamBadge').classList.add('hidden');
   phase='title';
   document.getElementById('titleOverlay').classList.remove('hidden');
-  setReferee('Select a mode from the Void Edge Chronicles 3.0 menu.');
+  setReferee('Choose Void Edge 3.0 or Classic Bumper Pool from the menu.');
+}
+function clearTimers(){
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  if(bpLagTimer){clearInterval(bpLagTimer);bpLagTimer=null;}
 }
 
 function openChroniclesModal(){
@@ -585,25 +706,23 @@ function openChroniclesModal(){
 }
 function selectRival(id){
   selectedRival=RIVALS.find(r=>r.id===id)||RIVALS[3];
-  document.getElementById('rivalBtn').textContent=`Rival: ${selectedRival.name.split(' ')[0]}`;
+  document.getElementById('rivalBtn').textContent=`Rival: ${selectedRival.short}`;
   openChroniclesModal();
 }
 function launchSelectedRival(){
   closeModals();
   vsAI=true;
-  document.getElementById('matchModeLabel').textContent='CHRONICLES';
-  document.getElementById('p1Name').textContent='GRADIENTS (YOU)';
+  document.getElementById('p1Name').textContent='PLAYER 1 (YOU)';
   document.getElementById('p2Name').textContent=selectedRival.name.toUpperCase();
   document.getElementById('rivalBtn').style.display='inline-block';
-  resetMatch();
+  resetMatch(true);
 }
 function startQuickMatch(ai){
   vsAI=ai;
-  document.getElementById('matchModeLabel').textContent=ai?'QUICK MATCH':'2P LOCAL';
-  document.getElementById('p1Name').textContent='GRADIENTS (P1)';
-  document.getElementById('p2Name').textContent=ai?selectedRival.name.toUpperCase():'VECTORS (P2)';
+  document.getElementById('p1Name').textContent=gameType==='void'?'GRADIENTS (P1)':'RED TEAM (P1)';
+  document.getElementById('p2Name').textContent=ai?selectedRival.name.toUpperCase():(gameType==='void'?'VECTORS (P2)':'WHITE TEAM (P2)');
   document.getElementById('rivalBtn').style.display=ai?'inline-block':'none';
-  resetMatch();
+  resetMatch(true);
 }
 
 function openShopModal(){
@@ -640,18 +759,34 @@ function openRulesModal(){
   document.getElementById('rulesModal').classList.remove('hidden');
 }
 
-// Match Lifecycle
-function resetMatch(){
-  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+// ==========================================
+// UNIFIED MATCH LIFECYCLE
+// ==========================================
+function resetMatch(newSeries=true){
+  clearTimers();
+  if(newSeries){
+    seriesWins=[0,0];
+    gameNum=1;
+    shotLogs=[];
+  }
   document.getElementById('titleOverlay').classList.add('hidden');
   document.getElementById('voidCamBadge').classList.add('hidden');
   marbles=[];particles=[];scores=[0,0];moveIdx=0;suddenDeath=false;
-  phase='coin';aiming=false;isReplaying=false;shotLogs=[];
-  addLog('New match initialized. Flipping coin for Initiative.');
-  updateHUD();
-  initCoin();
+  aiming=false;isReplaying=false;selectedBall=null;
+
+  if(gameType==='void'){
+    phase='coin';
+    addLog(`Void Edge Game ${gameNum} initialized. Flipping coin for Initiative.`);
+    updateHUD();
+    initCoin();
+  }else{
+    startBumperPoolLag();
+  }
 }
 
+// ==========================================
+// MODE A: VOID EDGE 3.0 LOGIC
+// ==========================================
 function initCoin(){
   const winner=Math.random()<0.5?0:1;
   window._coinWinner=winner;
@@ -676,7 +811,7 @@ function chooseOrder(goFirst){
   order=goFirst?[w,1-w]:[1-w,w];
   document.getElementById('coinModal').classList.add('hidden');
   addLog(`${order[0]===0?'Gradients':'Vectors'} takes the opening shot.`);
-  startTurn();
+  startVoidTurn();
 }
 
 function getCurrentMarbleSpec(){
@@ -694,9 +829,9 @@ function spawnSuddenDeathMarbles(forceReset=false){
   }
 }
 
-function startTurn(){
+function startVoidTurn(){
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
-  if(!suddenDeath && moveIdx>=10){endMatch();return;}
+  if(!suddenDeath && moveIdx>=10){finishGame(scores[0]>scores[1]?0:(scores[1]>scores[0]?1:-1));return;}
   if(suddenDeath)spawnSuddenDeathMarbles(false);
 
   activeTeam=order[moveIdx%2];
@@ -709,28 +844,186 @@ function startTurn(){
   const pName=activeTeam===0?'Gradients':(vsAI?selectedRival.name:'Vectors (P2)');
   if(vsAI && activeTeam===1){
     setReferee(`${pName} is lining up ${spec.name} (${spec.val}pt)...`);
-    aiTimer=setTimeout(aiShoot,750);
+    aiTimer=setTimeout(aiShootVoid,750);
   }else{
     setReferee(`${pName}'s Turn — Pull back cue to fire ${spec.name} (${spec.val}pt)`);
   }
 }
 
+// ==========================================
+// MODE B: BUMPER POOL + 3-2-1 BANK SHOOTOUT
+// ==========================================
+function setupBumperPoolBalls(){
+  marbles=[];
+  const redSpec={name:'Red Ball',val:1,color:'#dc2626',hi:'#fca5a5',lo:'#450a0a',num:''};
+  const whiteSpec={name:'White Ball',val:1,color:'#f8fafc',hi:'#ffffff',lo:'#64748b',num:''};
+
+  // Bottom Row (Player 1 - Red Team, shooting UP toward Top Target Pocket)
+  // Center ball is the marked Leader Ball
+  const p1X=[W/2-116,W/2-58,W/2,W/2+58,W/2+116];
+  p1X.forEach((bx,i)=>{
+    marbles.push({
+      x:bx,y:PLAY_MAX-28,vx:0,vy:0,team:0,val:1,
+      spec:redSpec,isLeader:(i===2),sunk:false
+    });
+  });
+
+  // Top Row (Player 2 / CPU - White Team, shooting DOWN toward Bottom Target Pocket)
+  p1X.forEach((bx,i)=>{
+    marbles.push({
+      x:bx,y:PLAY_MIN+28,vx:0,vy:0,team:1,val:1,
+      spec:whiteSpec,isLeader:(i===2),sunk:false
+    });
+  });
+}
+
+function startBumperPoolLag(){
+  setupBumperPoolBalls();
+  phase='bp_lag_countdown';
+  bpLagCountdown=3;
+  updateHUD();
+  setReferee('BUMPER POOL LAG SHOOTOUT: Get ready... 3!');
+  addLog('3-2-1 Bank Shootout initiated to determine first shot!');
+  playSFX('beep',1);
+
+  bpLagTimer=setInterval(()=>{
+    bpLagCountdown--;
+    if(bpLagCountdown>0){
+      setReferee(`BUMPER POOL LAG SHOOTOUT: Get ready... ${bpLagCountdown}!`);
+      playSFX('beep',1);
+    }else{
+      clearInterval(bpLagTimer);bpLagTimer=null;
+      setReferee('SHOOT! Both players bank off the far cushion toward the target hole!');
+      playSFX('beep',2);
+      executeBumperPoolLagShots();
+    }
+  },750);
+}
+
+function executeBumperPoolLagShots(){
+  phase='bp_lag_moving';
+  // Grab each team's Leader ball for the synchronized 3-2-1 bank lag
+  const p1Lead=marbles.find(m=>m.team===0 && m.isLeader);
+  const p2Lead=marbles.find(m=>m.team===1 && m.isLeader);
+  bpLagBalls=[p1Lead,p2Lead];
+
+  // Player 1 banks off top rail (slightly angled around center posts) back toward top target pocket
+  const p1Ang=-Math.PI/2 + (Math.random()*0.26 - 0.13) + (Math.random()<0.5?-0.32:0.32);
+  const p1Spd=10.6 + (Math.random()*1.6 - 0.8);
+  p1Lead.vx=Math.cos(p1Ang)*p1Spd;
+  p1Lead.vy=Math.sin(p1Ang)*p1Spd;
+
+  // Player 2 banks off bottom rail toward bottom target pocket
+  const p2Ang=Math.PI/2 + (Math.random()*0.26 - 0.13) + (Math.random()<0.5?-0.32:0.32);
+  const p2Spd=10.6 + (Math.random()*1.6 - 0.8);
+  p2Lead.vx=Math.cos(p2Ang)*p2Spd;
+  p2Lead.vy=Math.sin(p2Ang)*p2Spd;
+
+  playSFX('launch',1);
+}
+
+function resolveBumperPoolLag(){
+  const p1Lead=bpLagBalls[0];
+  const p2Lead=bpLagBalls[1];
+  const p1Target=BP_POCKETS[0]; // Top pocket
+  const p2Target=BP_POCKETS[1]; // Bottom pocket
+
+  const d1=p1Lead.sunk?9999:Math.hypot(p1Lead.x-p1Target.x,p1Lead.y-p1Target.y);
+  const d2=p2Lead.sunk?9999:Math.hypot(p2Lead.x-p2Target.x,p2Lead.y-p2Target.y);
+
+  // Reset balls cleanly to starting rack after the lag shootout
+  setupBumperPoolBalls();
+
+  const p1WinsLag=(d1<=d2);
+  activeTeam=p1WinsLag?0:1;
+  const winnerName=activeTeam===0?'Red Team (P1)':(vsAI?selectedRival.name:'White Team (P2)');
+  const msg=`LAG WINNER: ${winnerName} stopped closest to the hole (${Math.round(Math.min(d1,d2))}px) and shoots first!`;
+  addLog(msg);
+  startBumperTurn(msg);
+}
+
+function startBumperTurn(customMsg=null){
+  if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
+  bpScoredOwnThisTurn=false;
+
+  const myBalls=marbles.filter(m=>m.team===activeTeam && !m.sunk);
+  const oppBalls=marbles.filter(m=>m.team!==activeTeam && !m.sunk);
+  if(myBalls.length===0){finishGame(activeTeam);return;}
+  if(oppBalls.length===0){finishGame(1-activeTeam);return;}
+
+  // Auto-select Leader Ball if still on board, otherwise first available ball
+  const leader=myBalls.find(m=>m.isLeader);
+  selectedBall=leader||myBalls[0];
+  shooterPos={x:selectedBall.x,y:selectedBall.y};
+  phase='aim';
+  updateHUD();
+
+  const pName=activeTeam===0?'Red Team (P1)':(vsAI?selectedRival.name:'White Team (P2)');
+  const mustLeader=leader?' (Must sink Leader Ball first!)':' (Click any of your balls or drag to shoot)';
+  if(vsAI && activeTeam===1){
+    setReferee(customMsg||`${pName} is aiming ${selectedBall.isLeader?'Leader Ball':'White Ball'}...`);
+    aiTimer=setTimeout(aiShootBumperPool,850);
+  }else{
+    setReferee(customMsg||`${pName}'s Turn${mustLeader}`);
+  }
+}
+
+function spotBallOnCenter(ball){
+  ball.sunk=false;
+  ball.vx=0;ball.vy=0;
+  // Find open spot near center if occupied
+  const offsets=[[0,0],[0,-34],[0,34],[-34,0],[34,0]];
+  for(const [ox,oy] of offsets){
+    const tx=W/2+ox,ty=H/2+oy;
+    if(!marbles.some(m=>!m.sunk && m!==ball && Math.hypot(m.x-tx,m.y-ty)<BP_R*2.2)){
+      ball.x=tx;ball.y=ty;return;
+    }
+  }
+  ball.x=W/2;ball.y=H/2;
+}
+
+// ==========================================
+// HUD & DISPLAY UPDATES
+// ==========================================
 function updateHUD(){
-  document.getElementById('s1').textContent=scores[0];
-  document.getElementById('s2').textContent=scores[1];
-  document.getElementById('r1').textContent=`On Board: ${marbles.filter(m=>m.team===0).length}`;
-  document.getElementById('r2').textContent=`Record: ${saveData.record.wins}W - ${saveData.record.losses}L`;
-  document.getElementById('turnInfo').textContent=suddenDeath?'SUDDEN DEATH':`${Math.min(10,moveIdx+1)} / 10`;
-  const spec=getCurrentMarbleSpec();
-  document.getElementById('nextMarble').textContent=spec?`${spec.name} (${spec.val}pt)`:'Match Complete';
+  const isVoid=(gameType==='void');
+  document.getElementById('matchModeLabel').textContent=
+    seriesMax>1?`GAME ${gameNum}/${seriesMax} • SERIES ${seriesWins[0]}-${seriesWins[1]}`:'SINGLE GAME';
+
+  if(isVoid){
+    document.getElementById('s1').textContent=scores[0];
+    document.getElementById('s2').textContent=scores[1];
+    document.getElementById('r1').textContent=`On Board: ${marbles.filter(m=>m.team===0).length}`;
+    document.getElementById('r2').textContent=`Career: ${saveData.record.wins}W - ${saveData.record.losses}L`;
+    document.getElementById('turnInfo').textContent=suddenDeath?'SUDDEN DEATH':`SHOT ${Math.min(10,moveIdx+1)} / 10`;
+    const spec=getCurrentMarbleSpec();
+    document.getElementById('nextMarble').textContent=spec?`${spec.name} (${spec.val}pt)`:'Game Complete';
+  }else{
+    const p1Left=marbles.filter(m=>m.team===0 && !m.sunk).length;
+    const p2Left=marbles.filter(m=>m.team===1 && !m.sunk).length;
+    document.getElementById('s1').textContent=5-p1Left;
+    document.getElementById('s2').textContent=5-p2Left;
+    document.getElementById('r1').textContent=`Balls Left: ${p1Left} / 5`;
+    document.getElementById('r2').textContent=`Balls Left: ${p2Left} / 5`;
+    if(phase==='bp_lag_countdown'||phase==='bp_lag_moving'){
+      document.getElementById('turnInfo').textContent='3-2-1 LAG';
+      document.getElementById('nextMarble').textContent='Closest to Hole Shoots 1st';
+    }else{
+      const myLeader=marbles.some(m=>m.team===activeTeam && m.isLeader && !m.sunk);
+      document.getElementById('turnInfo').textContent=activeTeam===0?'RED TURN':'WHITE TURN';
+      document.getElementById('nextMarble').textContent=myLeader?'Objective: Sink Leader Ball':'Objective: Clear Remaining';
+    }
+  }
 
   document.getElementById('cardP1').classList.toggle('active-turn',phase==='aim'&&activeTeam===0);
   document.getElementById('cardP2').classList.toggle('active-turn',phase==='aim'&&activeTeam===1);
   document.getElementById('cardP2').classList.toggle('p2',phase==='aim'&&activeTeam===1);
 }
 
-// Multi-Marble Physics Simulator for AI
-function simulateFullBoard(vx,vy){
+// ==========================================
+// AI ENGINES (VOID EDGE & BUMPER POOL)
+// ==========================================
+function simulateFullBoardVoid(vx,vy){
   const spec=getCurrentMarbleSpec();
   const cx=W/2,cy=H/2;
   const minBound=PLAY_MIN+R,maxBound=PLAY_MAX-R;
@@ -804,7 +1097,7 @@ function simulateFullBoard(vx,vy){
   return score;
 }
 
-function aiShoot(){
+function aiShootVoid(){
   aiTimer=null;
   if(phase!=='aim'||!vsAI||activeTeam!==1)return;
   const targets=marbles.filter(m=>m.team===0);
@@ -842,7 +1135,7 @@ function aiShoot(){
   for(const ang of angles){
     for(const spd of speeds){
       const vx=Math.cos(ang)*spd,vy=Math.sin(ang)*spd;
-      const s=simulateFullBoard(vx,vy)+(Math.random()-0.5)*jitter;
+      const s=simulateFullBoardVoid(vx,vy)+(Math.random()-0.5)*jitter;
       if(s>bestScore){bestScore=s;bestVx=vx;bestVy=vy;}
     }
   }
@@ -851,31 +1144,168 @@ function aiShoot(){
     const sp=Math.hypot(bestVx,bestVy);
     bestVx=Math.cos(a)*sp;bestVy=Math.sin(a)*sp;
   }
-  launchMarble(bestVx,bestVy);
+  launchShot(bestVx,bestVy);
 }
 
-function launchMarble(vx,vy){
-  playSFX('launch',Math.hypot(vx,vy)/12);
-  const spec=getCurrentMarbleSpec();
-  const shooterName=activeTeam===0?'Gradients':(vsAI?selectedRival.name:'Vectors');
-  addLog(`${shooterName} fires ${spec.name} (${spec.val}pt).`);
-  setReferee(`${shooterName} strikes ${spec.name}!`);
+// Bumper Pool AI Simulator
+function simulateBumperShot(ballIdx,vx,vy){
+  const minB=PLAY_MIN+BP_R,maxB=PLAY_MAX-BP_R;
+  const sim=marbles.map(m=>({x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,isLeader:m.isLeader,sunk:m.sunk}));
+  sim[ballIdx].vx=vx;sim[ballIdx].vy=vy;
 
+  const targetPocket=BP_POCKETS[1]; // Bottom pocket for AI (team 1)
+  const ownPocket=BP_POCKETS[0];    // Top pocket
+  const hadLeader=sim.some(m=>m.team===1 && m.isLeader && !m.sunk);
+
+  let score=0;
+  for(let step=0;step<300;step++){
+    let moving=false;
+    for(const m of sim){
+      if(m.sunk)continue;
+      m.x+=m.vx;m.y+=m.vy;
+      m.vx*=0.985;m.vy*=0.985;
+      if(m.x<minB){m.x=minB;m.vx=Math.abs(m.vx)*0.84;}
+      if(m.x>maxB){m.x=maxB;m.vx=-Math.abs(m.vx)*0.84;}
+      if(m.y<minB){m.y=minB;m.vy=Math.abs(m.vy)*0.84;}
+      if(m.y>maxB){m.y=maxB;m.vy=-Math.abs(m.vy)*0.84;}
+
+      // Bumper posts
+      for(const bp of BP_BUMPERS){
+        const dx=m.x-bp.x,dy=m.y-bp.y,d=Math.hypot(dx,dy);
+        if(d>0 && d<BP_R+BP_POST_R){
+          const nx=dx/d,ny=dy/d;
+          m.x=bp.x+nx*(BP_R+BP_POST_R);
+          m.y=bp.y+ny*(BP_R+BP_POST_R);
+          const vn=m.vx*nx+m.vy*ny;
+          if(vn<0){m.vx-=1.85*vn*nx;m.vy-=1.85*vn*ny;}
+        }
+      }
+
+      // Pockets
+      if(Math.hypot(m.x-targetPocket.x,m.y-targetPocket.y)<BP_POCKET_R*0.85){
+        m.sunk=true;
+        if(m.team===1){
+          if(hadLeader && !m.isLeader)score-=400; // Penalty for sinking non-leader first
+          else score+=1200;
+        }else{
+          score-=150; // Spots enemy ball
+        }
+      }else if(Math.hypot(m.x-ownPocket.x,m.y-ownPocket.y)<BP_POCKET_R*0.85){
+        m.sunk=true;
+        score-=600;
+      }
+
+      if(!m.sunk && Math.hypot(m.vx,m.vy)>0.08)moving=true;
+    }
+
+    for(let i=0;i<sim.length;i++){
+      if(sim[i].sunk)continue;
+      for(let j=i+1;j<sim.length;j++){
+        if(sim[j].sunk)continue;
+        const a=sim[i],b=sim[j];
+        const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+        if(d>0 && d<BP_R*2){
+          const nx=dx/d,ny=dy/d,ov=(BP_R*2-d)/2;
+          a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+          const dvx=b.vx-a.vx,dvy=b.vy-a.vy,imp=dvx*nx+dvy*ny;
+          if(imp<0){a.vx+=imp*nx*0.92;a.vy+=imp*ny*0.92;b.vx-=imp*nx*0.92;b.vy-=imp*ny*0.92;}
+        }
+      }
+    }
+    if(!moving)break;
+  }
+
+  // Reward getting AI balls closer to target pocket
+  for(const m of sim){
+    if(m.sunk)continue;
+    const dist=Math.hypot(m.x-targetPocket.x,m.y-targetPocket.y);
+    if(m.team===1){
+      if(!hadLeader || m.isLeader)score+=(500-dist)*0.8;
+    }
+  }
+  return score;
+}
+
+function aiShootBumperPool(){
+  aiTimer=null;
+  if(phase!=='aim'||!vsAI||activeTeam!==1)return;
+  const myBalls=marbles.filter(m=>m.team===1 && !m.sunk);
+  const leader=myBalls.find(m=>m.isLeader);
+  const candidates=leader?[leader]:myBalls;
+
+  const targetPocket=BP_POCKETS[1];
+  let bestScore=-Infinity,bestBall=candidates[0],bestVx=0,bestVy=7;
+
+  for(const b of candidates){
+    const idx=marbles.indexOf(b);
+    const baseAng=Math.atan2(targetPocket.y-b.y,targetPocket.x-b.x);
+    const angles=[baseAng,baseAng-0.12,baseAng+0.12,baseAng-0.25,baseAng+0.25];
+    for(let d=20;d<=160;d+=14)angles.push(d*Math.PI/180);
+    const speeds=[6.5,9.5,12.5];
+
+    for(const ang of angles){
+      for(const spd of speeds){
+        const vx=Math.cos(ang)*spd,vy=Math.sin(ang)*spd;
+        const sc=simulateBumperShot(idx,vx,vy)+(Math.random()-0.5)*15;
+        if(sc>bestScore){bestScore=sc;bestBall=b;bestVx=vx;bestVy=vy;}
+      }
+    }
+  }
+
+  selectedBall=bestBall;
+  shooterPos={x:selectedBall.x,y:selectedBall.y};
+  launchShot(bestVx,bestVy);
+}
+
+// ==========================================
+// SHOT LAUNCH & INPUT
+// ==========================================
+function launchShot(vx,vy){
+  playSFX('launch',Math.hypot(vx,vy)/12);
   replayBuffer=[];
-  if(suddenDeath){
-    const ex=marbles.find(m=>m.team===activeTeam && m.val===10);
-    if(ex){ex.x=shooterPos.x;ex.y=shooterPos.y;ex.vx=vx;ex.vy=vy;ex.touchedByOpp=false;}
-    else marbles.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:activeTeam,val:spec.val,spec,touchedByOpp:false});
+
+  if(gameType==='void'){
+    const spec=getCurrentMarbleSpec();
+    const shooterName=activeTeam===0?'Gradients':(vsAI?selectedRival.name:'Vectors');
+    addLog(`${shooterName} fires ${spec.name} (${spec.val}pt).`);
+    setReferee(`${shooterName} strikes ${spec.name}!`);
+
+    if(suddenDeath){
+      const ex=marbles.find(m=>m.team===activeTeam && m.val===10);
+      if(ex){ex.x=shooterPos.x;ex.y=shooterPos.y;ex.vx=vx;ex.vy=vy;ex.touchedByOpp=false;}
+      else marbles.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:activeTeam,val:spec.val,spec,touchedByOpp:false});
+    }else{
+      marbles.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:activeTeam,val:spec.val,spec,touchedByOpp:false});
+    }
   }else{
-    marbles.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:activeTeam,val:spec.val,spec,touchedByOpp:false});
+    const shooterName=activeTeam===0?'Red Team':(vsAI?selectedRival.name:'White Team');
+    selectedBall.vx=vx;selectedBall.vy=vy;
+    addLog(`${shooterName} shoots ${selectedBall.isLeader?'Leader Ball':'ball'}.`);
+    setReferee(`${shooterName} fires!`);
   }
   phase='moving';
   updateHUD();
 }
 
-// Pointer Input & Power Meter
 canvas.addEventListener('pointerdown',e=>{
   if(phase!=='aim'||isReplaying||(vsAI&&activeTeam===1))return;
+  const rect=canvas.getBoundingClientRect();
+  const px=(e.clientX-rect.left)*(W/rect.width);
+  const py=(e.clientY-rect.top)*(H/rect.height);
+
+  // In Bumper Pool, allow clicking any eligible ball on your team (if Leader is already sunk)
+  if(gameType==='bumper'){
+    const myBalls=marbles.filter(m=>m.team===activeTeam && !m.sunk);
+    const leader=myBalls.find(m=>m.isLeader);
+    if(!leader){
+      const clicked=myBalls.find(m=>Math.hypot(m.x-px,m.y-py)<=BP_R+8);
+      if(clicked){
+        selectedBall=clicked;
+        shooterPos={x:clicked.x,y:clicked.y};
+      }
+    }
+  }
+
   aiming=true;updateAim(e);
 });
 window.addEventListener('pointermove',e=>{if(aiming)updateAim(e);});
@@ -885,7 +1315,7 @@ window.addEventListener('pointerup',()=>{
   const dx=aimPos.x-shooterPos.x,dy=aimPos.y-shooterPos.y,dist=Math.hypot(dx,dy);
   if(dist<15)return;
   const power=Math.min(15,dist/18);
-  launchMarble((dx/dist)*power,(dy/dist)*power);
+  launchShot((dx/dist)*power,(dy/dist)*power);
 });
 
 function updateAim(e){
@@ -914,8 +1344,11 @@ function spawnParticles(x,y,color,count=14){
   }
 }
 
+// ==========================================
+// PHYSICS ENGINE (BOTH MODES)
+// ==========================================
 function stepPhysics(){
-  if(phase!=='moving'||isReplaying)return;
+  if((phase!=='moving' && phase!=='bp_lag_moving')||isReplaying)return;
 
   replayBuffer.push(marbles.map(m=>({...m})));
   if(replayBuffer.length>90)replayBuffer.shift();
@@ -923,61 +1356,121 @@ function stepPhysics(){
   let anyMoving=false;
   let bigElimination=false;
   const cx=W/2,cy=H/2;
-  const minBound=PLAY_MIN+R,maxBound=PLAY_MAX-R;
+  const rad=gameType==='void'?R:BP_R;
+  const minBound=PLAY_MIN+rad,maxBound=PLAY_MAX-rad;
 
   for(let i=marbles.length-1;i>=0;i--){
     const m=marbles[i];
+    if(m.sunk)continue;
     m.x+=m.vx;m.y+=m.vy;
     m.vx*=0.985;m.vy*=0.985;
 
     let bounced=false;
-    if(m.x<minBound){m.x=minBound;m.vx=Math.abs(m.vx)*0.82;bounced=true;}
-    if(m.x>maxBound){m.x=maxBound;m.vx=-Math.abs(m.vx)*0.82;bounced=true;}
-    if(m.y<minBound){m.y=minBound;m.vy=Math.abs(m.vy)*0.82;bounced=true;}
-    if(m.y>maxBound){m.y=maxBound;m.vy=-Math.abs(m.vy)*0.82;bounced=true;}
+    if(m.x<minBound){m.x=minBound;m.vx=Math.abs(m.vx)*0.84;bounced=true;}
+    if(m.x>maxBound){m.x=maxBound;m.vx=-Math.abs(m.vx)*0.84;bounced=true;}
+    if(m.y<minBound){m.y=minBound;m.vy=Math.abs(m.vy)*0.84;bounced=true;}
+    if(m.y>maxBound){m.y=maxBound;m.vy=-Math.abs(m.vy)*0.84;bounced=true;}
     if(bounced){
       const sp=Math.hypot(m.vx,m.vy);
       if(sp>1.4){playSFX('clack',sp/12);spawnParticles(m.x,m.y,'#e9d5ff',5);}
     }
 
-    const dx=cx-m.x,dy=cy-m.y;
-    if(Math.abs(dx)<SLOPE_HALF && Math.abs(dy)<SLOPE_HALF){
-      const dist=Math.hypot(dx,dy)||1;
-      m.vx+=(dx/dist)*0.22;m.vy+=(dy/dist)*0.22;
-    }
-
-    if(Math.abs(dx)<HOLE_HALF && Math.abs(dy)<HOLE_HALF){
-      playSFX('void',1);
-      shakeTime=14;shakeMag=6;
-      spawnParticles(m.x,m.y,m.spec.color,24);
-
-      const victimTeam=m.team===0?'Gradients':'Vectors';
-      if(m.touchedByOpp || m.team!==activeTeam){
-        scores[1-m.team]+=m.val;
-        const scorer=m.team===0?'Vectors':'Gradients';
-        const msg=`VOID DROP! ${victimTeam}'s ${m.spec.name} falls into the pit (+${m.val} pts to ${scorer})!`;
-        setReferee(msg);addLog(msg);
-        if(m.val>=5)bigElimination=true;
-      }else{
-        const msg=`UNFORCED FALL! ${victimTeam}'s ${m.spec.name} rolls into the Void (0 pts).`;
-        setReferee(msg);addLog(msg);
+    if(gameType==='void'){
+      // Void Edge Gravity Slope & Pit
+      const dx=cx-m.x,dy=cy-m.y;
+      if(Math.abs(dx)<SLOPE_HALF && Math.abs(dy)<SLOPE_HALF){
+        const dist=Math.hypot(dx,dy)||1;
+        m.vx+=(dx/dist)*0.22;m.vy+=(dy/dist)*0.22;
       }
-      marbles.splice(i,1);
-      updateHUD();
-      continue;
+      if(Math.abs(dx)<HOLE_HALF && Math.abs(dy)<HOLE_HALF){
+        playSFX('void',1);
+        shakeTime=14;shakeMag=6;
+        spawnParticles(m.x,m.y,m.spec.color,24);
+
+        const victimTeam=m.team===0?'Gradients':'Vectors';
+        if(m.touchedByOpp || m.team!==activeTeam){
+          scores[1-m.team]+=m.val;
+          const scorer=m.team===0?'Vectors':'Gradients';
+          const msg=`VOID DROP! ${victimTeam}'s ${m.spec.name} falls into the pit (+${m.val} pts to ${scorer})!`;
+          setReferee(msg);addLog(msg);
+          if(m.val>=5)bigElimination=true;
+        }else{
+          const msg=`UNFORCED FALL! ${victimTeam}'s ${m.spec.name} rolls into the Void (0 pts).`;
+          setReferee(msg);addLog(msg);
+        }
+        marbles.splice(i,1);
+        updateHUD();
+        continue;
+      }
+    }else{
+      // Bumper Pool Posts
+      for(const bp of BP_BUMPERS){
+        const dx=m.x-bp.x,dy=m.y-bp.y,d=Math.hypot(dx,dy);
+        if(d>0 && d<BP_R+BP_POST_R){
+          const nx=dx/d,ny=dy/d;
+          m.x=bp.x+nx*(BP_R+BP_POST_R);
+          m.y=bp.y+ny*(BP_R+BP_POST_R);
+          const vn=m.vx*nx+m.vy*ny;
+          if(vn<0){
+            m.vx-=1.85*vn*nx;m.vy-=1.85*vn*ny;
+            playSFX('clack',Math.min(1.4,Math.abs(vn)/8));
+            spawnParticles(bp.x+nx*BP_POST_R,bp.y+ny*BP_POST_R,'#22d3ee',6);
+          }
+        }
+      }
+
+      // Bumper Pool Pockets
+      for(const pk of BP_POCKETS){
+        if(Math.hypot(m.x-pk.x,m.y-pk.y)<BP_POCKET_R*0.85){
+          playSFX('void',1);
+          shakeTime=10;shakeMag=4;
+          spawnParticles(pk.x,pk.y,pk.color,20);
+          m.sunk=true;m.vx=0;m.vy=0;
+
+          if(phase==='bp_lag_moving'){
+            setReferee('LAG SCRATCH! Ball dropped in pocket during shootout!');
+          }else{
+            const teamLabel=m.team===0?'Red Team':'White Team';
+            // Did ball drop in its intended target pocket?
+            if(pk.owner!==m.team){
+              const hadOtherLeader=marbles.some(x=>x.team===m.team && x.isLeader && !x.sunk);
+              if(hadOtherLeader && !m.isLeader){
+                const msg=`FOUL! ${teamLabel} sank a regular ball before their Leader Ball — spotted at center!`;
+                setReferee(msg);addLog(msg);
+                spotBallOnCenter(m);
+              }else{
+                const msg=`GOAL! ${teamLabel} sinks ${m.isLeader?'their LEADER BALL':'a ball'} — SHOOT AGAIN!`;
+                setReferee(msg);addLog(msg);
+                if(m.team===activeTeam)bpScoredOwnThisTurn=true;
+                if(m.isLeader)bigElimination=true;
+              }
+            }else{
+              // Dropped into own home pocket (scratch/penalty)
+              const msg=`SCRATCH! ${teamLabel}'s ball fell into their own pocket — spotted at center!`;
+              setReferee(msg);addLog(msg);
+              spotBallOnCenter(m);
+            }
+          }
+          updateHUD();
+          break;
+        }
+      }
     }
 
-    if(Math.hypot(m.vx,m.vy)>0.08)anyMoving=true;
+    if(!m.sunk && Math.hypot(m.vx,m.vy)>0.08)anyMoving=true;
     else{m.vx=0;m.vy=0;}
   }
 
+  // Ball-to-Ball Collisions
   for(let i=0;i<marbles.length;i++){
+    if(marbles[i].sunk)continue;
     for(let j=i+1;j<marbles.length;j++){
+      if(marbles[j].sunk)continue;
       const a=marbles[i],b=marbles[j];
       const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
-      if(d>0 && d<R*2){
+      if(d>0 && d<rad*2){
         if(a.team!==b.team){a.touchedByOpp=true;b.touchedByOpp=true;}
-        const nx=dx/d,ny=dy/d,ov=(R*2-d)/2;
+        const nx=dx/d,ny=dy/d,ov=(rad*2-d)/2;
         a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
         const dvx=b.vx-a.vx,dvy=b.vy-a.vy,imp=dvx*nx+dvy*ny;
         if(imp<0){
@@ -993,10 +1486,30 @@ function stepPhysics(){
   }
 
   if(!anyMoving){
+    if(phase==='bp_lag_moving'){
+      resolveBumperPoolLag();
+      return;
+    }
+
     const finishTurn=()=>{
-      if(suddenDeath){endMatch();return;}
-      moveIdx++;startTurn();
+      if(gameType==='void'){
+        if(suddenDeath){
+          if(scores[0]!==scores[1]){finishGame(scores[0]>scores[1]?0:1);return;}
+          spawnSuddenDeathMarbles(false);
+          moveIdx++;startVoidTurn();return;
+        }
+        moveIdx++;startVoidTurn();
+      }else{
+        const p1Left=marbles.filter(m=>m.team===0 && !m.sunk).length;
+        const p2Left=marbles.filter(m=>m.team===1 && !m.sunk).length;
+        if(p1Left===0){finishGame(0);return;}
+        if(p2Left===0){finishGame(1);return;}
+
+        if(!bpScoredOwnThisTurn)activeTeam=1-activeTeam;
+        startBumperTurn();
+      }
     };
+
     if(bigElimination && replayBuffer.length>15){
       triggerVoidCam(finishTurn);
     }else{
@@ -1013,22 +1526,32 @@ function triggerVoidCam(cb){
   document.getElementById('voidCamBadge').classList.remove('hidden');
 }
 
-function endMatch(){
-  if(scores[0]===scores[1]){
-    if(!suddenDeath){
-      suddenDeath=true;moveIdx=0;
-      spawnSuddenDeathMarbles(true);
-      const msg='TIE SCORE! Sudden Death — Knock out the enemy 10pt Cyan Diamond!';
-      setReferee(msg);addLog(msg);
-      startTurn();return;
-    }else{
-      spawnSuddenDeathMarbles(false);
-      moveIdx++;startTurn();return;
-    }
+function finishGame(winnerTeam){
+  // Handle Void Edge Tie -> Sudden Death
+  if(winnerTeam===-1 && gameType==='void'){
+    suddenDeath=true;moveIdx=0;
+    spawnSuddenDeathMarbles(true);
+    const msg='TIE SCORE! Sudden Death — Knock out the enemy 10pt Cyan Diamond!';
+    setReferee(msg);addLog(msg);
+    startVoidTurn();return;
+  }
+
+  if(winnerTeam===0)seriesWins[0]++;
+  else seriesWins[1]++;
+
+  const neededToWin=Math.ceil(seriesMax/2);
+  if(seriesWins[0]<neededToWin && seriesWins[1]<neededToWin){
+    const gWinner=winnerTeam===0?'Player 1':(vsAI?selectedRival.name:'Player 2');
+    const msg=`${gWinner} wins Game ${gameNum}! Series is ${seriesWins[0]}–${seriesWins[1]}. Starting Game ${gameNum+1}...`;
+    setReferee(msg);addLog(msg);
+    gameNum++;
+    phase='between_games';
+    aiTimer=setTimeout(()=>resetMatch(false),1800);
+    return;
   }
 
   phase='over';
-  const p1Won=scores[0]>scores[1];
+  const p1Won=(seriesWins[0]>=neededToWin);
   if(p1Won){
     saveData.record.wins++;
     playSFX('win');
@@ -1039,37 +1562,50 @@ function endMatch(){
     }
     saveData.shards+=earned;
     persist();
-    const msg=`VICTORY! Gradients defeat ${vsAI?selectedRival.name:'Vectors'} (${scores[0]}–${scores[1]}) +${earned} ◆`;
+    const msg=`MATCH VICTORY! You defeated ${vsAI?selectedRival.name:'Player 2'} +${earned} ◆`;
     setReferee(msg);addLog(msg);
   }else{
     saveData.record.losses++;
     playSFX('lose');
     saveData.shards+=5;
     persist();
-    const msg=`DEFEAT! ${vsAI?selectedRival.name:'Vectors'} wins (${scores[1]}–${scores[0]}). +5 ◆ consolation.`;
+    const msg=`MATCH DEFEAT! ${vsAI?selectedRival.name:'Player 2'} wins the match. +5 ◆ consolation.`;
     setReferee(msg);addLog(msg);
   }
   updateHUD();
 }
 
-// Trajectory Raycast Preview
+// ==========================================
+// AIM RAYCAST & RENDERING
+// ==========================================
 function getAimPrediction(){
   const dx=aimPos.x-shooterPos.x,dy=aimPos.y-shooterPos.y,dist=Math.hypot(dx,dy);
   if(dist<15)return null;
   const nx=dx/dist,ny=dy/dist;
   let x=shooterPos.x,y=shooterPos.y;
   let hitX=x+nx*260,hitY=y+ny*260,bounceX=null,bounceY=null;
-  const minBound=PLAY_MIN+R,maxBound=PLAY_MAX-R;
+  const rad=gameType==='void'?R:BP_R;
+  const minBound=PLAY_MIN+rad,maxBound=PLAY_MAX-rad;
 
   for(let step=0;step<280;step+=3){
     const tx=x+nx*step,ty=y+ny*step;
-    let hitMarble=false;
+    let hitObj=false;
     for(const m of marbles){
-      if(Math.hypot(m.x-tx,m.y-ty)<=R*2){
-        hitX=tx;hitY=ty;hitMarble=true;break;
+      if(m.sunk || m===selectedBall)continue;
+      if(Math.hypot(m.x-tx,m.y-ty)<=rad*2){
+        hitX=tx;hitY=ty;hitObj=true;break;
       }
     }
-    if(hitMarble)break;
+    if(hitObj)break;
+
+    if(gameType==='bumper'){
+      for(const bp of BP_BUMPERS){
+        if(Math.hypot(bp.x-tx,bp.y-ty)<=rad+BP_POST_R){
+          hitX=tx;hitY=ty;hitObj=true;break;
+        }
+      }
+      if(hitObj)break;
+    }
 
     if(tx<=minBound || tx>=maxBound){
       hitX=tx;hitY=ty;
@@ -1085,7 +1621,6 @@ function getAimPrediction(){
   return {hitX,hitY,bounceX,bounceY,nx,ny,powerRatio:Math.min(1,(dist/18)/15)};
 }
 
-// Draw Tapered Realistic Crimson & Gold Cue Stick
 function drawTaperedCue(tipX,tipY,buttX,buttY){
   const dx=buttX-tipX,dy=buttY-tipY;
   const len=Math.hypot(dx,dy)||1;
@@ -1137,10 +1672,10 @@ function drawTaperedCue(tipX,tipY,buttX,buttY){
   ctx.restore();
 }
 
-// Draw 3D Beveled Tabletop
 function drawTable(theme){
   const cx=W/2,cy=H/2;
 
+  // 1. Exterior Apron & Trays
   ctx.fillStyle=theme.apron;
   ctx.fillRect(0,0,W,H);
 
@@ -1155,6 +1690,7 @@ function drawTable(theme){
   ctx.strokeRect(cx-122,12,244,42);
   ctx.strokeRect(cx-122,H-54,244,42);
 
+  // 2. Raised Mitered Rails
   const bSize=W-APRON*2;
   ctx.fillStyle=theme.railOuter;
   ctx.fillRect(APRON,APRON,bSize,bSize);
@@ -1171,6 +1707,7 @@ function drawTable(theme){
   ctx.lineWidth=1.5;
   ctx.strokeRect(APRON+0.5,APRON+0.5,bSize-1,bSize-1);
 
+  // 3. Woven Felt Playing Surface
   const playW=PLAY_MAX-PLAY_MIN;
   const feltGrad=ctx.createRadialGradient(cx,cy,60,cx,cy,playW*0.65);
   feltGrad.addColorStop(0,theme.felt);
@@ -1190,100 +1727,141 @@ function drawTable(theme){
   ctx.strokeRect(PLAY_MIN,PLAY_MIN,playW,playW);
   ctx.restore();
 
-  if(!suddenDeath){
-    const p1Drafted=phase==='title'?0:Math.floor((moveIdx + (order[0]===0?1:0))/2);
-    const p2Drafted=phase==='title'?0:Math.floor((moveIdx + (order[0]===1?1:0))/2);
+  // 4. Exterior Reserve Trays (Void Edge Draft OR Bumper Pool Sunk Ball Tray)
+  if(gameType==='void'){
+    if(!suddenDeath){
+      const p1Drafted=phase==='title'?0:Math.floor((moveIdx + (order[0]===0?1:0))/2);
+      const p2Drafted=phase==='title'?0:Math.floor((moveIdx + (order[0]===1?1:0))/2);
 
-    for(let idx=0;idx<5;idx++){
-      const rosterIdx=4-idx;
-      const rx=cx - 88 + idx*44;
-      const ry=33;
-      ctx.fillStyle='rgba(0,0,0,0.55)';
-      ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
-
-      if(rosterIdx>=p2Drafted){
-        drawGlossyMarble(rx,ry,ROSTER[rosterIdx],1,true,15.5);
+      for(let idx=0;idx<5;idx++){
+        const rosterIdx=4-idx;
+        const rx=cx - 88 + idx*44,ry=33;
+        ctx.fillStyle='rgba(0,0,0,0.55)';
+        ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
+        if(rosterIdx>=p2Drafted)drawGlossyMarble(rx,ry,ROSTER[rosterIdx],1,true,15.5,false);
+      }
+      for(let idx=0;idx<5;idx++){
+        const rosterIdx=idx;
+        const rx=cx - 88 + idx*44,ry=H - 33;
+        ctx.fillStyle='rgba(0,0,0,0.55)';
+        ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
+        if(rosterIdx>=p1Drafted)drawGlossyMarble(rx,ry,ROSTER[rosterIdx],0,false,15.5,false);
       }
     }
 
-    for(let idx=0;idx<5;idx++){
-      const rosterIdx=idx;
-      const rx=cx - 88 + idx*44;
-      const ry=H - 33;
-      ctx.fillStyle='rgba(0,0,0,0.55)';
-      ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
+    // 5A. Void Edge Beveled Metallic Funnel & Void Pit
+    const ox1=cx-SLOPE_HALF,oy1=cy-SLOPE_HALF,ox2=cx+SLOPE_HALF,oy2=cy+SLOPE_HALF;
+    const ix1=cx-HOLE_HALF,iy1=cy-HOLE_HALF,ix2=cx+HOLE_HALF,iy2=cy+HOLE_HALF;
 
-      if(rosterIdx>=p1Drafted){
-        drawGlossyMarble(rx,ry,ROSTER[rosterIdx],0,false,15.5);
-      }
+    ctx.fillStyle='rgba(0,0,0,0.45)';
+    ctx.fillRect(ox1-4,oy1-2,SLOPE_HALF*2+8,SLOPE_HALF*2+8);
+
+    const gTop=ctx.createLinearGradient(cx,oy1,cx,iy1);
+    gTop.addColorStop(0,theme.rampTop);gTop.addColorStop(1,theme.rampRight);
+    ctx.fillStyle=gTop;
+    ctx.beginPath();ctx.moveTo(ox1,oy1);ctx.lineTo(ox2,oy1);ctx.lineTo(ix2,iy1);ctx.lineTo(ix1,iy1);ctx.closePath();ctx.fill();
+
+    const gLeft=ctx.createLinearGradient(ox1,cy,ix1,cy);
+    gLeft.addColorStop(0,theme.rampLeft);gLeft.addColorStop(1,theme.rampBot);
+    ctx.fillStyle=gLeft;
+    ctx.beginPath();ctx.moveTo(ox1,oy1);ctx.lineTo(ix1,iy1);ctx.lineTo(ix1,iy2);ctx.lineTo(ox1,oy2);ctx.closePath();ctx.fill();
+
+    const gRight=ctx.createLinearGradient(ox2,cy,ix2,cy);
+    gRight.addColorStop(0,theme.rampRight);gRight.addColorStop(1,theme.rampBot);
+    ctx.fillStyle=gRight;
+    ctx.beginPath();ctx.moveTo(ox2,oy1);ctx.lineTo(ox2,oy2);ctx.lineTo(ix2,iy2);ctx.lineTo(ix2,iy1);ctx.closePath();ctx.fill();
+
+    const gBot=ctx.createLinearGradient(cx,oy2,cx,iy2);
+    gBot.addColorStop(0,theme.rampBot);gBot.addColorStop(1,'#1e293b');
+    ctx.fillStyle=gBot;
+    ctx.beginPath();ctx.moveTo(ox1,oy2);ctx.lineTo(ix1,iy2);ctx.lineTo(ix2,iy2);ctx.lineTo(ox2,oy2);ctx.closePath();ctx.fill();
+
+    ctx.strokeStyle='rgba(15,23,42,0.5)';
+    ctx.lineWidth=1.2;
+    [[ox1,oy1,ix1,iy1],[ox2,oy1,ix2,iy1],[ox2,oy2,ix2,iy2],[ox1,oy2,ix1,iy2]].forEach(([x1,y1,x2,y2])=>{
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    });
+    ctx.strokeStyle='rgba(255,255,255,0.45)';
+    ctx.strokeRect(ox1,oy1,SLOPE_HALF*2,SLOPE_HALF*2);
+
+    ctx.fillStyle=theme.pitWall;
+    ctx.fillRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
+
+    const pitGrad=ctx.createRadialGradient(cx,cy,VOID_R*0.6,cx,cy,HOLE_HALF*1.35);
+    pitGrad.addColorStop(0,theme.pitCore);
+    pitGrad.addColorStop(1,'rgba(0,0,0,0.65)');
+    ctx.fillStyle=pitGrad;
+    ctx.fillRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
+
+    ctx.strokeStyle='rgba(0,0,0,0.8)';
+    ctx.lineWidth=3;
+    ctx.strokeRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
+
+    ctx.fillStyle='#020005';
+    ctx.beginPath();ctx.arc(cx,cy,VOID_R,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.22)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(cx,cy,VOID_R,0.2,Math.PI*1.1);ctx.stroke();
+  }else{
+    // 5B. Classic Bumper Pool Pockets, Center Spot & 12 Rubber Posts
+    // Exterior trays show sunk balls!
+    const p1Sunk=marbles.filter(m=>m.team===0 && m.sunk);
+    const p2Sunk=marbles.filter(m=>m.team===1 && m.sunk);
+    for(let idx=0;idx<5;idx++){
+      const rx=cx - 88 + idx*44;
+      ctx.fillStyle='rgba(0,0,0,0.55)';
+      ctx.beginPath();ctx.arc(rx,33,9,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(rx,H-33,9,0,Math.PI*2);ctx.fill();
+      if(p1Sunk[idx])drawGlossyMarble(rx,33,p1Sunk[idx].spec,0,false,14,p1Sunk[idx].isLeader);
+      if(p2Sunk[idx])drawGlossyMarble(rx,H-33,p2Sunk[idx].spec,1,false,14,p2Sunk[idx].isLeader);
     }
+
+    // Center Penalty Spot Dot
+    ctx.fillStyle='rgba(255,255,255,0.35)';
+    ctx.beginPath();ctx.arc(cx,cy,4.5,0,Math.PI*2);ctx.fill();
+
+    // Target Goal Pockets (Top & Bottom)
+    BP_POCKETS.forEach(pk=>{
+      // Outer metallic/team colored ring
+      ctx.fillStyle='rgba(0,0,0,0.5)';
+      ctx.beginPath();ctx.arc(pk.x,pk.y+2,BP_POCKET_R+5,0,Math.PI*2);ctx.fill();
+
+      ctx.strokeStyle=pk.color;
+      ctx.lineWidth=3.5;
+      ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R+2,0,Math.PI*2);ctx.stroke();
+
+      ctx.fillStyle='#030108';
+      ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R,0,Math.PI*2);ctx.fill();
+    });
+
+    // 12 Central Rubber-Cushioned Bumper Posts
+    BP_BUMPERS.forEach(bp=>{
+      ctx.fillStyle='rgba(0,0,0,0.55)';
+      ctx.beginPath();ctx.arc(bp.x+2.5,bp.y+3.5,BP_POST_R,0,Math.PI*2);ctx.fill();
+
+      const bg=ctx.createRadialGradient(bp.x-4,bp.y-4,2,bp.x,bp.y,BP_POST_R);
+      bg.addColorStop(0,'#ffffff');
+      bg.addColorStop(0.45,'#cbd5e1');
+      bg.addColorStop(0.85,'#475569');
+      bg.addColorStop(1,'#0f172a');
+      ctx.fillStyle=bg;
+      ctx.beginPath();ctx.arc(bp.x,bp.y,BP_POST_R,0,Math.PI*2);ctx.fill();
+
+      // Rubber bumper ring
+      ctx.strokeStyle='#22d3ee';
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(bp.x,bp.y,BP_POST_R-1,0,Math.PI*2);ctx.stroke();
+    });
   }
 
-  const ox1=cx-SLOPE_HALF,oy1=cy-SLOPE_HALF,ox2=cx+SLOPE_HALF,oy2=cy+SLOPE_HALF;
-  const ix1=cx-HOLE_HALF,iy1=cy-HOLE_HALF,ix2=cx+HOLE_HALF,iy2=cy+HOLE_HALF;
-
-  ctx.fillStyle='rgba(0,0,0,0.45)';
-  ctx.fillRect(ox1-4,oy1-2,SLOPE_HALF*2+8,SLOPE_HALF*2+8);
-
-  const gTop=ctx.createLinearGradient(cx,oy1,cx,iy1);
-  gTop.addColorStop(0,theme.rampTop);gTop.addColorStop(1,theme.rampRight);
-  ctx.fillStyle=gTop;
-  ctx.beginPath();ctx.moveTo(ox1,oy1);ctx.lineTo(ox2,oy1);ctx.lineTo(ix2,iy1);ctx.lineTo(ix1,iy1);ctx.closePath();ctx.fill();
-
-  const gLeft=ctx.createLinearGradient(ox1,cy,ix1,cy);
-  gLeft.addColorStop(0,theme.rampLeft);gLeft.addColorStop(1,theme.rampBot);
-  ctx.fillStyle=gLeft;
-  ctx.beginPath();ctx.moveTo(ox1,oy1);ctx.lineTo(ix1,iy1);ctx.lineTo(ix1,iy2);ctx.lineTo(ox1,oy2);ctx.closePath();ctx.fill();
-
-  const gRight=ctx.createLinearGradient(ox2,cy,ix2,cy);
-  gRight.addColorStop(0,theme.rampRight);gRight.addColorStop(1,theme.rampBot);
-  ctx.fillStyle=gRight;
-  ctx.beginPath();ctx.moveTo(ox2,oy1);ctx.lineTo(ox2,oy2);ctx.lineTo(ix2,iy2);ctx.lineTo(ix2,iy1);ctx.closePath();ctx.fill();
-
-  const gBot=ctx.createLinearGradient(cx,oy2,cx,iy2);
-  gBot.addColorStop(0,theme.rampBot);gBot.addColorStop(1,'#1e293b');
-  ctx.fillStyle=gBot;
-  ctx.beginPath();ctx.moveTo(ox1,oy2);ctx.lineTo(ix1,iy2);ctx.lineTo(ix2,iy2);ctx.lineTo(ox2,oy2);ctx.closePath();ctx.fill();
-
-  ctx.strokeStyle='rgba(15,23,42,0.5)';
-  ctx.lineWidth=1.2;
-  [[ox1,oy1,ix1,iy1],[ox2,oy1,ix2,iy1],[ox2,oy2,ix2,iy2],[ox1,oy2,ix1,iy2]].forEach(([x1,y1,x2,y2])=>{
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-  });
-  ctx.strokeStyle='rgba(255,255,255,0.45)';
-  ctx.strokeRect(ox1,oy1,SLOPE_HALF*2,SLOPE_HALF*2);
-
-  ctx.fillStyle=theme.pitWall;
-  ctx.fillRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
-
-  const pitGrad=ctx.createRadialGradient(cx,cy,VOID_R*0.6,cx,cy,HOLE_HALF*1.35);
-  pitGrad.addColorStop(0,theme.pitCore);
-  pitGrad.addColorStop(1,'rgba(0,0,0,0.65)');
-  ctx.fillStyle=pitGrad;
-  ctx.fillRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
-
-  ctx.strokeStyle='rgba(0,0,0,0.8)';
-  ctx.lineWidth=3;
-  ctx.strokeRect(ix1,iy1,HOLE_HALF*2,HOLE_HALF*2);
-
-  ctx.fillStyle='#020005';
-  ctx.beginPath();ctx.arc(cx,cy,VOID_R,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.22)';
-  ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.arc(cx,cy,VOID_R,0.2,Math.PI*1.1);ctx.stroke();
-
+  // 6. Exterior Resting Pool Cues
   const p1Holding=(phase==='aim' && activeTeam===0 && aiming);
   const p2Holding=(phase==='aim' && activeTeam===1 && aiming);
-  if(!p1Holding){
-    drawTaperedCue(32,APRON+24,32,H-APRON-24);
-  }
-  if(!p2Holding){
-    drawTaperedCue(W-32,H-APRON-24,W-32,APRON+24);
-  }
+  if(!p1Holding)drawTaperedCue(32,APRON+24,32,H-APRON-24);
+  if(!p2Holding)drawTaperedCue(W-32,H-APRON-24,W-32,APRON+24);
 }
 
-// Render Realistic Glossy Billiard Marble
-function drawGlossyMarble(x,y,spec,team,upsideDown=false,radius=R){
+function drawGlossyMarble(x,y,spec,team,upsideDown=false,radius=R,isLeader=false){
   ctx.fillStyle='rgba(0,0,0,0.52)';
   ctx.beginPath();ctx.arc(x+3,y+4.5,radius,0,Math.PI*2);ctx.fill();
 
@@ -1295,26 +1873,34 @@ function drawGlossyMarble(x,y,spec,team,upsideDown=false,radius=R){
   ctx.fillStyle=grad;
   ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();
 
-  ctx.strokeStyle=team===0?'rgba(34,211,238,0.65)':'rgba(250,204,21,0.65)';
-  ctx.lineWidth=1.5;
+  ctx.strokeStyle=isLeader?'#facc15':(team===0?'rgba(34,211,238,0.65)':'rgba(250,204,21,0.55)');
+  ctx.lineWidth=isLeader?2.6:1.4;
   ctx.beginPath();ctx.arc(x,y,radius-0.6,0,Math.PI*2);ctx.stroke();
+
+  // Leader Ball inner gold ring
+  if(isLeader){
+    ctx.strokeStyle='#facc15';
+    ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.arc(x,y,radius*0.52,0,Math.PI*2);ctx.stroke();
+  }
 
   ctx.fillStyle='rgba(255,255,255,0.45)';
   ctx.beginPath();
   ctx.ellipse(x-radius*0.35,y-radius*0.38,radius*0.26,radius*0.14,-Math.PI/4,0,Math.PI*2);
   ctx.fill();
 
-  ctx.save();
-  ctx.translate(x,y);
-  if(upsideDown)ctx.rotate(Math.PI);
-  ctx.fillStyle=spec.num;
-  ctx.font=`900 ${radius<16?11:12}px system-ui,sans-serif`;
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(spec.val,0,0.5);
-  ctx.restore();
+  if(spec.num!==''){
+    ctx.save();
+    ctx.translate(x,y);
+    if(upsideDown)ctx.rotate(Math.PI);
+    ctx.fillStyle=spec.num;
+    ctx.font=`900 ${radius<16?11:12}px system-ui,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(spec.val,0,0.5);
+    ctx.restore();
+  }
 }
 
-// Main Render Loop
 function draw(){
   const theme=THEMES.find(t=>t.id===saveData.activeTheme)||THEMES[0];
 
@@ -1339,11 +1925,13 @@ function draw(){
     }
   }
 
+  const rad=gameType==='void'?R:BP_R;
+
+  // Aiming Ring, Trajectory & Active Tapered Cue
   if(phase==='aim' && !isReplaying){
-    const spec=getCurrentMarbleSpec();
     const teamColor=activeTeam===0?'#22d3ee':'#facc15';
-    const pulse=21+Math.sin(Date.now()/170)*2.5;
-    ctx.strokeStyle=teamColor;ctx.lineWidth=1.8;
+    const pulse=(rad+4)+Math.sin(Date.now()/170)*2.5;
+    ctx.strokeStyle=teamColor;ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(shooterPos.x,shooterPos.y,pulse,0,Math.PI*2);ctx.stroke();
 
     if(aiming){
@@ -1358,7 +1946,7 @@ function draw(){
         }
         ctx.setLineDash([]);
         ctx.strokeStyle=teamColor;ctx.lineWidth=1.5;
-        ctx.beginPath();ctx.arc(pred.hitX,pred.hitY,R,0,Math.PI*2);ctx.stroke();
+        ctx.beginPath();ctx.arc(pred.hitX,pred.hitY,rad,0,Math.PI*2);ctx.stroke();
 
         const pullBack=24+pred.powerRatio*56;
         const cueLen=165;
@@ -1368,12 +1956,26 @@ function draw(){
       }
     }
 
-    if(spec){
-      drawGlossyMarble(shooterPos.x,shooterPos.y,spec,activeTeam,false);
+    if(gameType==='void'){
+      const spec=getCurrentMarbleSpec();
+      if(spec)drawGlossyMarble(shooterPos.x,shooterPos.y,spec,activeTeam,false,R,false);
     }
   }
 
-  activeMarbles.forEach(m=>drawGlossyMarble(m.x,m.y,m.spec,m.team,false));
+  activeMarbles.forEach(m=>{
+    if(!m.sunk)drawGlossyMarble(m.x,m.y,m.spec,m.team,false,rad,!!m.isLeader);
+  });
+
+  // 3-2-1 Lag Countdown Banner on Canvas
+  if(phase==='bp_lag_countdown'){
+    ctx.fillStyle='rgba(6,3,14,0.72)';
+    ctx.beginPath();ctx.roundRect(W/2-115,H/2-42,230,84,14);ctx.fill();
+    ctx.strokeStyle='#facc15';ctx.lineWidth=2.5;ctx.stroke();
+    ctx.fillStyle='#facc15';
+    ctx.font='900 44px system-ui,sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(bpLagCountdown>0?bpLagCountdown:'SHOOT!',W/2,H/2+2);
+  }
 
   for(let i=particles.length-1;i>=0;i--){
     const p=particles[i];
