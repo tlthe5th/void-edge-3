@@ -16,11 +16,11 @@ body{
   color:var(--text);margin:0;padding:.85rem;min-height:100vh;
   display:flex;flex-direction:column;align-items:center;
 }
-.app{width:100%;max-width:680px;display:flex;flex-direction:column;align-items:center}
+.app{width:100%;max-width:840px;display:flex;flex-direction:column;align-items:center}
 
 /* Top Brand Bar */
 .topbar{
-  width:100%;display:flex;justify-content:space-between;align-items:center;
+  width:100%;max-width:780px;display:flex;justify-content:space-between;align-items:center;
   margin-bottom:.5rem;padding:0 .25rem;gap:.5rem;flex-wrap:wrap;
 }
 .brand h1{
@@ -45,7 +45,7 @@ body{
 /* Scoreboard HUD */
 .hud{
   display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:.6rem;
-  width:100%;margin-bottom:.55rem;
+  width:100%;max-width:780px;margin-bottom:.55rem;
 }
 .card{
   background:linear-gradient(180deg,var(--panel2),var(--panel));
@@ -64,7 +64,7 @@ body{
 
 /* Referee Ticker */
 .referee{
-  width:100%;background:var(--panel);border:1px solid var(--neon);border-radius:10px;
+  width:100%;max-width:780px;background:var(--panel);border:1px solid var(--neon);border-radius:10px;
   padding:.55rem .85rem;margin-bottom:.55rem;display:flex;align-items:center;gap:.65rem;
   height:54px;flex-shrink:0;box-shadow:0 0 16px rgba(168,85,247,.2);
 }
@@ -77,18 +77,21 @@ body{
   overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
 }
 
-/* Canvas Wrapper */
+/* Canvas Wrapper — Adapts smoothly between Square (Void Edge) and Rectangular (Bumper Pool) */
 .stage{
   position:relative;width:100%;max-width:620px;aspect-ratio:1/1;
   border-radius:14px;overflow:hidden;border:3px solid #4c1d95;
   box-shadow:0 18px 45px rgba(0,0,0,.75),0 0 28px rgba(168,85,247,.3);
-  background:#0e051c;flex-shrink:0;
+  background:#0e051c;flex-shrink:0;transition:max-width .2s ease;
+}
+.stage.rect-mode{
+  max-width:820px;aspect-ratio:820/540;
 }
 canvas{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
 
 /* Power Meter Bar */
 .power-bar-wrap{
-  width:100%;max-width:620px;margin-top:.5rem;background:var(--panel);
+  width:100%;max-width:780px;margin-top:.5rem;background:var(--panel);
   border:1px solid var(--border);border-radius:8px;padding:.35rem .7rem;
   display:flex;align-items:center;gap:.65rem;font-size:.75rem;
 }
@@ -139,32 +142,32 @@ button.gold{background:linear-gradient(135deg,#eab308,#ca8a04);color:#090514;fon
 .mode-switch{
   display:grid;grid-template-columns:1fr 1fr;gap:.4rem;
   background:#090414;padding:.35rem;border-radius:10px;border:1px solid var(--border);
-  width:100%;max-width:330px;margin-bottom:.75rem;
+  width:100%;max-width:340px;margin-bottom:.65rem;
 }
 .switch-btn{
-  padding:.52rem .6rem;border-radius:7px;font-size:.8rem;font-weight:800;
+  padding:.5rem .6rem;border-radius:7px;font-size:.8rem;font-weight:800;
   background:transparent;color:var(--muted);border:none;cursor:pointer;
 }
 .switch-btn.active{
   background:var(--neon);color:#fff;box-shadow:0 0 12px rgba(168,85,247,.4);
 }
 .series-switch{
-  display:flex;gap:.45rem;justify-content:center;margin-bottom:.85rem;font-size:.78rem;
+  display:flex;gap:.45rem;justify-content:center;margin-bottom:.75rem;font-size:.78rem;
 }
 .series-chip{
-  padding:.3rem .75rem;border-radius:999px;background:#1a0e36;border:1px solid var(--border);
+  padding:.28rem .75rem;border-radius:999px;background:#1a0e36;border:1px solid var(--border);
   color:#cbd5e1;cursor:pointer;font-weight:700;
 }
 .series-chip.active{border-color:var(--gold);color:var(--gold);background:#26144d}
 
 .title-logo{
-  font-size:1.85rem;font-weight:900;letter-spacing:1.5px;margin:0;
+  font-size:1.75rem;font-weight:900;letter-spacing:1.5px;margin:0;
   background:linear-gradient(90deg,#22d3ee,#fff,#facc15);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.title-tag{color:#c084fc;font-size:.82rem;margin:.2rem 0 .85rem}
-.menu-grid{display:grid;grid-template-columns:1fr;gap:.5rem;width:100%;max-width:310px}
-.menu-grid button{padding:.65rem 1rem;font-size:.9rem}
+.title-tag{color:#c084fc;font-size:.8rem;margin:.2rem 0 .7rem}
+.menu-grid{display:grid;grid-template-columns:1fr;gap:.45rem;width:100%;max-width:310px}
+.menu-grid button{padding:.6rem 1rem;font-size:.88rem}
 
 /* Rival Cards & Shop */
 .rival-list{display:flex;flex-direction:column;gap:.55rem;margin:.85rem 0;text-align:left}
@@ -192,7 +195,7 @@ button.gold{background:linear-gradient(135deg,#eab308,#ca8a04);color:#090514;fon
 
 /* Shot Log Drawer */
 .log-box{
-  width:100%;max-width:620px;background:var(--panel);border:1px solid var(--border);
+  width:100%;max-width:780px;background:var(--panel);border:1px solid var(--border);
   border-radius:10px;padding:.65rem .85rem;margin-top:.55rem;font-size:.78rem;
 }
 .log-list{
@@ -235,7 +238,7 @@ footer a{color:var(--cyan);text-decoration:none}
   <!-- Scoreboard -->
   <div class="hud">
     <div class="card" id="cardP1">
-      <div class="card-label" style="color:var(--cyan)" id="p1Name">GRADIENTS (YOU)</div>
+      <div class="card-label" style="color:var(--cyan)" id="p1Name">GRADIENTS (LEFT)</div>
       <div class="card-score" id="s1">0</div>
       <div class="card-sub" id="r1">On Board: 0</div>
     </div>
@@ -245,7 +248,7 @@ footer a{color:var(--cyan);text-decoration:none}
       <div class="card-sub" id="nextMarble" style="color:var(--cyan)">White Scout (1pt)</div>
     </div>
     <div class="card" id="cardP2">
-      <div class="card-label" style="color:var(--gold)" id="p2Name">VECTORS (CPU)</div>
+      <div class="card-label" style="color:var(--gold)" id="p2Name">VECTORS (RIGHT)</div>
       <div class="card-score" id="s2">0</div>
       <div class="card-sub" id="r2">Career: 0W - 0L</div>
     </div>
@@ -368,10 +371,10 @@ footer a{color:var(--cyan);text-decoration:none}
         &bull; <b>Gravity Funnel &amp; Touch Rule:</b> Knock enemy marbles into the central Void pit to score their points. Dropping your own untouched marble in awards 0 points. Tied after 10 shots? Sudden Death 10pt Diamonds!
       </div>
       <div style="background:#190c33;padding:.65rem;border-radius:8px;border-left:3px solid var(--gold)">
-        <strong style="color:var(--gold);font-size:.9rem">MODE B: CLASSIC BUMPER POOL</strong><br>
-        &bull; <b>3-2-1 Bank Shootout (Lag):</b> At game start, a 3-2-1 countdown fires both players' lead balls off the far rail toward the opponent's goal. Closest ball to the target pocket shoots first!<br>
-        &bull; <b>Leader Ball First:</b> Each team has 5 balls (Red vs. White). You <b>must</b> sink your gold-ringed <b>Leader Ball</b> into your opponent's goal pocket before sinking your other 4 balls.<br>
-        &bull; <b>Bonus Turns &amp; Spotting:</b> Sink your own ball in the opponent's goal to shoot again! Sinking an opponent's ball spots it onto the center dot.
+        <strong style="color:var(--gold);font-size:.9rem">MODE B: CLASSIC BUMPER POOL (LEFT vs. RIGHT)</strong><br>
+        &bull; <b>3-2-1 Bank Shootout (Lag):</b> At game start, a 3-2-1 countdown fires both teams' spotted Leader Balls off the far end rail toward their target pocket. Closest ball to the hole shoots first!<br>
+        &bull; <b>Leader Ball First:</b> Home Team (Red, Left) shoots at the Right Pocket; CPU (White, Right) shoots at the Left Pocket. You <b>must</b> sink your spotted <b>Leader Ball</b> first before sinking your remaining 4 balls.<br>
+        &bull; <b>Bonus Turns &amp; Spotting:</b> Sink your own ball in the opponent's goal to shoot again! Sinking an opponent's ball or scratching spots the ball onto the center dot.
       </div>
     </div>
     <div style="text-align:center;margin-top:1rem">
@@ -382,27 +385,59 @@ footer a{color:var(--cyan);text-decoration:none}
 
 <script>
 const canvas=document.getElementById('board'),ctx=canvas.getContext('2d');
-const W=660,H=660,APRON=62,RAIL=14,PLAY_MIN=APRON+RAIL,PLAY_MAX=W-APRON-RAIL;
+
+// Dynamic Dimensions (Square 660x660 for Void Edge, Rectangular 820x540 for Bumper Pool)
+let W=660,H=660;
+const APRON=58,RAIL=14;
+let PLAY_MIN_X=APRON+RAIL,PLAY_MAX_X=W-APRON-RAIL;
+let PLAY_MIN_Y=APRON+RAIL,PLAY_MAX_Y=H-APRON-RAIL;
+
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
-// Bumper Pool Geometry
-const BP_R=14.5,BP_POCKET_R=23,BP_POST_R=13;
-const BP_POCKETS=[
-  {x:W/2,y:PLAY_MIN+32,owner:1,color:'#facc15',label:'P1 TARGET'}, // Top pocket (P1 shoots into this)
-  {x:W/2,y:PLAY_MAX-32,owner:0,color:'#22d3ee',label:'P2 TARGET'}  // Bottom pocket (P2 shoots into this)
-];
-// Classic 12-post Bumper Pool central cross/diamond layout
-const BP_BUMPERS=[
-  // Top pocket guard ring
-  {x:W/2-44,y:PLAY_MIN+68},{x:W/2+44,y:PLAY_MIN+68},
-  // Bottom pocket guard ring
-  {x:W/2-44,y:PLAY_MAX-68},{x:W/2+44,y:PLAY_MAX-68},
-  // Central diamond cluster
-  {x:W/2,y:H/2-62},{x:W/2,y:H/2+62},
-  {x:W/2-62,y:H/2},{x:W/2+62,y:H/2},
-  {x:W/2-34,y:H/2-34},{x:W/2+34,y:H/2-34},
-  {x:W/2-34,y:H/2+34},{x:W/2+34,y:H/2+34}
-];
+// Bumper Pool Geometry (Left = Home Team / Red, Right = CPU / White)
+const BP_R=14,BP_POCKET_R=21,BP_POST_R=12.5;
+let BP_POCKETS=[];
+let BP_BUMPERS=[];
+
+function syncTableDimensions(){
+  if(gameType==='void'){
+    W=660;H=660;
+    document.getElementById('stageWrap').classList.remove('rect-mode');
+  }else{
+    W=820;H=540;
+    document.getElementById('stageWrap').classList.add('rect-mode');
+  }
+  canvas.width=W;
+  canvas.height=H;
+  PLAY_MIN_X=APRON+RAIL;
+  PLAY_MAX_X=W-APRON-RAIL;
+  PLAY_MIN_Y=APRON+RAIL;
+  PLAY_MAX_Y=H-APRON-RAIL;
+
+  const cx=W/2,cy=H/2;
+  // Left Pocket (owned by Home Team / Red, CPU aims here)
+  // Right Pocket (owned by CPU / White, Home Team aims here)
+  const leftPkX=PLAY_MIN_X+34;
+  const rightPkX=PLAY_MAX_X-34;
+  BP_POCKETS=[
+    {x:leftPkX,y:cy,owner:0,color:'#f87171',label:'HOME POCKET'},
+    {x:rightPkX,y:cy,owner:1,color:'#facc15',label:'CPU POCKET'}
+  ];
+
+  // Authentic 12-Bumper Layout from Reference Photos:
+  // 2 guard bumpers flanking Left Pocket + 2 flanking Right Pocket + 8 in a clean '+' Cross at center!
+  BP_BUMPERS=[
+    // Left pocket guard posts (above & below left pocket)
+    {x:leftPkX,y:cy-42},{x:leftPkX,y:cy+42},
+    // Right pocket guard posts (above & below right pocket)
+    {x:rightPkX,y:cy-42},{x:rightPkX,y:cy+42},
+    // Central '+' Cross (2 top, 2 bottom, 2 left, 2 right — no enclosed box!)
+    {x:cx,y:cy-38},{x:cx,y:cy-82},
+    {x:cx,y:cy+38},{x:cx,y:cy+82},
+    {x:cx-42,y:cy},{x:cx-88,y:cy},
+    {x:cx+42,y:cy},{x:cx+88,y:cy}
+  ];
+}
 
 const ROSTER=[
   {name:'White Scout',val:1,color:'#f1f5f9',hi:'#ffffff',lo:'#64748b',num:'#0f172a'},
@@ -489,7 +524,7 @@ let gameNum=1;
 let selectedRival=RIVALS[3];
 let marbles=[],particles=[],scores=[0,0],moveIdx=0,order=[0,1],activeTeam=0;
 let phase='title',vsAI=true,suddenDeath=false,aiming=false;
-let aimPos={x:W/2,y:H/2},shooterPos={x:PLAY_MIN+R+8,y:H/2},aiTimer=null;
+let aimPos={x:W/2,y:H/2},shooterPos={x:PLAY_MIN_X+R+8,y:H/2},aiTimer=null;
 let shakeTime=0,shakeMag=0;
 let shotLogs=[];
 
@@ -634,6 +669,7 @@ function stepJukebox(i){
 // Mode & Series Switching
 function setGameType(type){
   gameType=type;
+  syncTableDimensions();
   const isVoid=(type==='void');
   document.getElementById('btnModeVoid').classList.toggle('active',isVoid);
   document.getElementById('btnModeBumper').classList.toggle('active',!isVoid);
@@ -644,6 +680,8 @@ function setGameType(type){
   document.getElementById('overlayTag').textContent=isVoid
     ?'Five Tiers of Warriors. One Gravity Abyss.'
     :'3-2-1 Bank Shootout. 12 Posts. Leader Ball First.';
+  document.getElementById('p1Name').textContent=isVoid?'GRADIENTS (LEFT)':'HOME RED (LEFT)';
+  document.getElementById('p2Name').textContent=vsAI?selectedRival.name.toUpperCase():(isVoid?'VECTORS (RIGHT)':'AWAY WHITE (RIGHT)');
   updateHUD();
 }
 
@@ -712,15 +750,15 @@ function selectRival(id){
 function launchSelectedRival(){
   closeModals();
   vsAI=true;
-  document.getElementById('p1Name').textContent='PLAYER 1 (YOU)';
+  document.getElementById('p1Name').textContent=gameType==='void'?'GRADIENTS (LEFT)':'HOME RED (LEFT)';
   document.getElementById('p2Name').textContent=selectedRival.name.toUpperCase();
   document.getElementById('rivalBtn').style.display='inline-block';
   resetMatch(true);
 }
 function startQuickMatch(ai){
   vsAI=ai;
-  document.getElementById('p1Name').textContent=gameType==='void'?'GRADIENTS (P1)':'RED TEAM (P1)';
-  document.getElementById('p2Name').textContent=ai?selectedRival.name.toUpperCase():(gameType==='void'?'VECTORS (P2)':'WHITE TEAM (P2)');
+  document.getElementById('p1Name').textContent=gameType==='void'?'GRADIENTS (LEFT)':'HOME RED (LEFT)';
+  document.getElementById('p2Name').textContent=ai?selectedRival.name.toUpperCase():(gameType==='void'?'VECTORS (RIGHT)':'AWAY WHITE (RIGHT)');
   document.getElementById('rivalBtn').style.display=ai?'inline-block':'none';
   resetMatch(true);
 }
@@ -764,6 +802,7 @@ function openRulesModal(){
 // ==========================================
 function resetMatch(newSeries=true){
   clearTimers();
+  syncTableDimensions();
   if(newSeries){
     seriesWins=[0,0];
     gameNum=1;
@@ -799,7 +838,7 @@ function initCoin(){
     aiTimer=setTimeout(()=>chooseOrder(cpuFirst),1150);
     return;
   }
-  const who=winner===0?'Gradients (P1)':'Vectors (P2)';
+  const who=winner===0?'Gradients (Left)':'Vectors (Right)';
   document.getElementById('coinText').textContent=`${who} won the Initiative toss! Choose your tactical opening:`;
   document.getElementById('coinButtons').classList.remove('hidden');
   document.getElementById('coinModal').classList.remove('hidden');
@@ -835,13 +874,13 @@ function startVoidTurn(){
   if(suddenDeath)spawnSuddenDeathMarbles(false);
 
   activeTeam=order[moveIdx%2];
-  shooterPos=activeTeam===0?{x:PLAY_MIN+R+8,y:H/2}:{x:PLAY_MAX-R-8,y:H/2};
+  shooterPos=activeTeam===0?{x:PLAY_MIN_X+R+8,y:H/2}:{x:PLAY_MAX_X-R-8,y:H/2};
   aimPos={x:W/2,y:H/2};
   phase='aim';
   updateHUD();
 
   const spec=getCurrentMarbleSpec();
-  const pName=activeTeam===0?'Gradients':(vsAI?selectedRival.name:'Vectors (P2)');
+  const pName=activeTeam===0?'Gradients':(vsAI?selectedRival.name:'Vectors (Right)');
   if(vsAI && activeTeam===1){
     setReferee(`${pName} is lining up ${spec.name} (${spec.val}pt)...`);
     aiTimer=setTimeout(aiShootVoid,750);
@@ -851,28 +890,35 @@ function startVoidTurn(){
 }
 
 // ==========================================
-// MODE B: BUMPER POOL + 3-2-1 BANK SHOOTOUT
+// MODE B: BUMPER POOL (LEFT vs RIGHT) + 3-2-1 BANK LAG
 // ==========================================
 function setupBumperPoolBalls(){
   marbles=[];
   const redSpec={name:'Red Ball',val:1,color:'#dc2626',hi:'#fca5a5',lo:'#450a0a',num:''};
   const whiteSpec={name:'White Ball',val:1,color:'#f8fafc',hi:'#ffffff',lo:'#64748b',num:''};
 
-  // Bottom Row (Player 1 - Red Team, shooting UP toward Top Target Pocket)
-  // Center ball is the marked Leader Ball
-  const p1X=[W/2-116,W/2-58,W/2,W/2+58,W/2+116];
-  p1X.forEach((bx,i)=>{
-    marbles.push({
-      x:bx,y:PLAY_MAX-28,vx:0,vy:0,team:0,val:1,
-      spec:redSpec,isLeader:(i===2),sunk:false
-    });
-  });
+  const cy=H/2;
+  const leftX=PLAY_MIN_X+26;
+  const rightX=PLAY_MAX_X-26;
 
-  // Top Row (Player 2 / CPU - White Team, shooting DOWN toward Bottom Target Pocket)
-  p1X.forEach((bx,i)=>{
+  // Authentic 5-Ball Layout matching the reference photos:
+  // 2 balls above pocket along the rail, 2 balls below pocket along the rail, 1 spotted Leader Ball directly in front of the pocket!
+  const yOffsets=[-118,-78,0,78,118];
+  yOffsets.forEach((dy,idx)=>{
+    const isLeader=(idx===2);
+    // Home Team (Red, Left side)
     marbles.push({
-      x:bx,y:PLAY_MIN+28,vx:0,vy:0,team:1,val:1,
-      spec:whiteSpec,isLeader:(i===2),sunk:false
+      x:isLeader?leftX+34:leftX,
+      y:cy+dy,
+      vx:0,vy:0,team:0,val:1,
+      spec:redSpec,isLeader,sunk:false
+    });
+    // CPU / Away Team (White, Right side)
+    marbles.push({
+      x:isLeader?rightX-34:rightX,
+      y:cy+dy,
+      vx:0,vy:0,team:1,val:1,
+      spec:whiteSpec,isLeader,sunk:false
     });
   });
 }
@@ -893,7 +939,7 @@ function startBumperPoolLag(){
       playSFX('beep',1);
     }else{
       clearInterval(bpLagTimer);bpLagTimer=null;
-      setReferee('SHOOT! Both players bank off the far cushion toward the target hole!');
+      setReferee('SHOOT! Both teams bank off the opposite rail toward their target pocket!');
       playSFX('beep',2);
       executeBumperPoolLagShots();
     }
@@ -902,20 +948,21 @@ function startBumperPoolLag(){
 
 function executeBumperPoolLagShots(){
   phase='bp_lag_moving';
-  // Grab each team's Leader ball for the synchronized 3-2-1 bank lag
   const p1Lead=marbles.find(m=>m.team===0 && m.isLeader);
   const p2Lead=marbles.find(m=>m.team===1 && m.isLeader);
   bpLagBalls=[p1Lead,p2Lead];
 
-  // Player 1 banks off top rail (slightly angled around center posts) back toward top target pocket
-  const p1Ang=-Math.PI/2 + (Math.random()*0.26 - 0.13) + (Math.random()<0.5?-0.32:0.32);
-  const p1Spd=10.6 + (Math.random()*1.6 - 0.8);
+  // Home Team (Left) shoots along the upper/lower lane toward Right Pocket, banking off the Right Rail
+  const laneSign1=Math.random()<0.5?-1:1;
+  const p1Ang=laneSign1*(0.24 + Math.random()*0.05);
+  const p1Spd=12.2 + (Math.random()*1.4 - 0.7);
   p1Lead.vx=Math.cos(p1Ang)*p1Spd;
   p1Lead.vy=Math.sin(p1Ang)*p1Spd;
 
-  // Player 2 banks off bottom rail toward bottom target pocket
-  const p2Ang=Math.PI/2 + (Math.random()*0.26 - 0.13) + (Math.random()<0.5?-0.32:0.32);
-  const p2Spd=10.6 + (Math.random()*1.6 - 0.8);
+  // CPU / Away Team (Right) shoots along the opposite lane toward Left Pocket, banking off the Left Rail
+  const laneSign2=-laneSign1;
+  const p2Ang=Math.PI + laneSign2*(0.24 + Math.random()*0.05);
+  const p2Spd=12.2 + (Math.random()*1.4 - 0.7);
   p2Lead.vx=Math.cos(p2Ang)*p2Spd;
   p2Lead.vy=Math.sin(p2Ang)*p2Spd;
 
@@ -925,8 +972,8 @@ function executeBumperPoolLagShots(){
 function resolveBumperPoolLag(){
   const p1Lead=bpLagBalls[0];
   const p2Lead=bpLagBalls[1];
-  const p1Target=BP_POCKETS[0]; // Top pocket
-  const p2Target=BP_POCKETS[1]; // Bottom pocket
+  const p1Target=BP_POCKETS[1]; // Home Team (Left) shoots at Right Pocket
+  const p2Target=BP_POCKETS[0]; // CPU (Right) shoots at Left Pocket
 
   const d1=p1Lead.sunk?9999:Math.hypot(p1Lead.x-p1Target.x,p1Lead.y-p1Target.y);
   const d2=p2Lead.sunk?9999:Math.hypot(p2Lead.x-p2Target.x,p2Lead.y-p2Target.y);
@@ -936,7 +983,7 @@ function resolveBumperPoolLag(){
 
   const p1WinsLag=(d1<=d2);
   activeTeam=p1WinsLag?0:1;
-  const winnerName=activeTeam===0?'Red Team (P1)':(vsAI?selectedRival.name:'White Team (P2)');
+  const winnerName=activeTeam===0?'Home Red (Left)':(vsAI?selectedRival.name:'Away White (Right)');
   const msg=`LAG WINNER: ${winnerName} stopped closest to the hole (${Math.round(Math.min(d1,d2))}px) and shoots first!`;
   addLog(msg);
   startBumperTurn(msg);
@@ -951,15 +998,14 @@ function startBumperTurn(customMsg=null){
   if(myBalls.length===0){finishGame(activeTeam);return;}
   if(oppBalls.length===0){finishGame(1-activeTeam);return;}
 
-  // Auto-select Leader Ball if still on board, otherwise first available ball
   const leader=myBalls.find(m=>m.isLeader);
   selectedBall=leader||myBalls[0];
   shooterPos={x:selectedBall.x,y:selectedBall.y};
   phase='aim';
   updateHUD();
 
-  const pName=activeTeam===0?'Red Team (P1)':(vsAI?selectedRival.name:'White Team (P2)');
-  const mustLeader=leader?' (Must sink Leader Ball first!)':' (Click any of your balls or drag to shoot)';
+  const pName=activeTeam===0?'Home Red (Left)':(vsAI?selectedRival.name:'Away White (Right)');
+  const mustLeader=leader?' (Must sink spotted Leader Ball first!)':' (Click any of your balls or drag to shoot)';
   if(vsAI && activeTeam===1){
     setReferee(customMsg||`${pName} is aiming ${selectedBall.isLeader?'Leader Ball':'White Ball'}...`);
     aiTimer=setTimeout(aiShootBumperPool,850);
@@ -971,11 +1017,11 @@ function startBumperTurn(customMsg=null){
 function spotBallOnCenter(ball){
   ball.sunk=false;
   ball.vx=0;ball.vy=0;
-  // Find open spot near center if occupied
-  const offsets=[[0,0],[0,-34],[0,34],[-34,0],[34,0]];
+  // Center spot is completely open inside the '+' cross!
+  const offsets=[[0,0],[-20,-20],[20,-20],[-20,20],[20,20]];
   for(const [ox,oy] of offsets){
     const tx=W/2+ox,ty=H/2+oy;
-    if(!marbles.some(m=>!m.sunk && m!==ball && Math.hypot(m.x-tx,m.y-ty)<BP_R*2.2)){
+    if(!marbles.some(m=>!m.sunk && m!==ball && Math.hypot(m.x-tx,m.y-ty)<BP_R*2.1)){
       ball.x=tx;ball.y=ty;return;
     }
   }
@@ -1010,7 +1056,7 @@ function updateHUD(){
       document.getElementById('nextMarble').textContent='Closest to Hole Shoots 1st';
     }else{
       const myLeader=marbles.some(m=>m.team===activeTeam && m.isLeader && !m.sunk);
-      document.getElementById('turnInfo').textContent=activeTeam===0?'RED TURN':'WHITE TURN';
+      document.getElementById('turnInfo').textContent=activeTeam===0?'HOME RED TURN':'AWAY WHITE TURN';
       document.getElementById('nextMarble').textContent=myLeader?'Objective: Sink Leader Ball':'Objective: Clear Remaining';
     }
   }
@@ -1026,7 +1072,8 @@ function updateHUD(){
 function simulateFullBoardVoid(vx,vy){
   const spec=getCurrentMarbleSpec();
   const cx=W/2,cy=H/2;
-  const minBound=PLAY_MIN+R,maxBound=PLAY_MAX-R;
+  const minX=PLAY_MIN_X+R,maxX=PLAY_MAX_X-R;
+  const minY=PLAY_MIN_Y+R,maxY=PLAY_MAX_Y-R;
   const sim=marbles.map(m=>({
     x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,val:m.val,touchedByOpp:m.touchedByOpp,isShot:false
   }));
@@ -1046,10 +1093,10 @@ function simulateFullBoardVoid(vx,vy){
       const m=sim[i];
       m.x+=m.vx;m.y+=m.vy;
       m.vx*=0.985;m.vy*=0.985;
-      if(m.x<minBound){m.x=minBound;m.vx=Math.abs(m.vx)*0.82;}
-      if(m.x>maxBound){m.x=maxBound;m.vx=-Math.abs(m.vx)*0.82;}
-      if(m.y<minBound){m.y=minBound;m.vy=Math.abs(m.vy)*0.82;}
-      if(m.y>maxBound){m.y=maxBound;m.vy=-Math.abs(m.vy)*0.82;}
+      if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.82;}
+      if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.82;}
+      if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.82;}
+      if(m.y>maxY){m.y=maxY;m.vy=-Math.abs(m.vy)*0.82;}
 
       const dx=cx-m.x,dy=cy-m.y;
       if(Math.abs(dx)<SLOPE_HALF && Math.abs(dy)<SLOPE_HALF){
@@ -1147,14 +1194,15 @@ function aiShootVoid(){
   launchShot(bestVx,bestVy);
 }
 
-// Bumper Pool AI Simulator
+// Bumper Pool AI Simulator (CPU is Right side, aims for Left Pocket!)
 function simulateBumperShot(ballIdx,vx,vy){
-  const minB=PLAY_MIN+BP_R,maxB=PLAY_MAX-BP_R;
+  const minX=PLAY_MIN_X+BP_R,maxX=PLAY_MAX_X-BP_R;
+  const minY=PLAY_MIN_Y+BP_R,maxY=PLAY_MAX_Y-BP_R;
   const sim=marbles.map(m=>({x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,isLeader:m.isLeader,sunk:m.sunk}));
   sim[ballIdx].vx=vx;sim[ballIdx].vy=vy;
 
-  const targetPocket=BP_POCKETS[1]; // Bottom pocket for AI (team 1)
-  const ownPocket=BP_POCKETS[0];    // Top pocket
+  const targetPocket=BP_POCKETS[0]; // Left pocket is CPU target!
+  const ownPocket=BP_POCKETS[1];    // Right pocket is CPU home pocket
   const hadLeader=sim.some(m=>m.team===1 && m.isLeader && !m.sunk);
 
   let score=0;
@@ -1164,12 +1212,11 @@ function simulateBumperShot(ballIdx,vx,vy){
       if(m.sunk)continue;
       m.x+=m.vx;m.y+=m.vy;
       m.vx*=0.985;m.vy*=0.985;
-      if(m.x<minB){m.x=minB;m.vx=Math.abs(m.vx)*0.84;}
-      if(m.x>maxB){m.x=maxB;m.vx=-Math.abs(m.vx)*0.84;}
-      if(m.y<minB){m.y=minB;m.vy=Math.abs(m.vy)*0.84;}
-      if(m.y>maxB){m.y=maxB;m.vy=-Math.abs(m.vy)*0.84;}
+      if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;}
+      if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.84;}
+      if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.84;}
+      if(m.y>maxY){m.y=maxY;m.vy=-Math.abs(m.vy)*0.84;}
 
-      // Bumper posts
       for(const bp of BP_BUMPERS){
         const dx=m.x-bp.x,dy=m.y-bp.y,d=Math.hypot(dx,dy);
         if(d>0 && d<BP_R+BP_POST_R){
@@ -1181,18 +1228,17 @@ function simulateBumperShot(ballIdx,vx,vy){
         }
       }
 
-      // Pockets
       if(Math.hypot(m.x-targetPocket.x,m.y-targetPocket.y)<BP_POCKET_R*0.85){
         m.sunk=true;
         if(m.team===1){
-          if(hadLeader && !m.isLeader)score-=400; // Penalty for sinking non-leader first
-          else score+=1200;
+          if(hadLeader && !m.isLeader)score-=450;
+          else score+=1400;
         }else{
-          score-=150; // Spots enemy ball
+          score-=150;
         }
       }else if(Math.hypot(m.x-ownPocket.x,m.y-ownPocket.y)<BP_POCKET_R*0.85){
         m.sunk=true;
-        score-=600;
+        score-=650;
       }
 
       if(!m.sunk && Math.hypot(m.vx,m.vy)>0.08)moving=true;
@@ -1215,12 +1261,11 @@ function simulateBumperShot(ballIdx,vx,vy){
     if(!moving)break;
   }
 
-  // Reward getting AI balls closer to target pocket
   for(const m of sim){
     if(m.sunk)continue;
     const dist=Math.hypot(m.x-targetPocket.x,m.y-targetPocket.y);
     if(m.team===1){
-      if(!hadLeader || m.isLeader)score+=(500-dist)*0.8;
+      if(!hadLeader || m.isLeader)score+=(650-dist)*0.85;
     }
   }
   return score;
@@ -1233,15 +1278,16 @@ function aiShootBumperPool(){
   const leader=myBalls.find(m=>m.isLeader);
   const candidates=leader?[leader]:myBalls;
 
-  const targetPocket=BP_POCKETS[1];
-  let bestScore=-Infinity,bestBall=candidates[0],bestVx=0,bestVy=7;
+  const targetPocket=BP_POCKETS[0]; // Left Pocket
+  let bestScore=-Infinity,bestBall=candidates[0],bestVx=-7,bestVy=0;
 
   for(const b of candidates){
     const idx=marbles.indexOf(b);
     const baseAng=Math.atan2(targetPocket.y-b.y,targetPocket.x-b.x);
     const angles=[baseAng,baseAng-0.12,baseAng+0.12,baseAng-0.25,baseAng+0.25];
-    for(let d=20;d<=160;d+=14)angles.push(d*Math.PI/180);
-    const speeds=[6.5,9.5,12.5];
+    // Include top/bottom rail bank angles
+    for(let d=115;d<=245;d+=12)angles.push(d*Math.PI/180);
+    const speeds=[7.0,10.0,13.2];
 
     for(const ang of angles){
       for(const spd of speeds){
@@ -1278,7 +1324,7 @@ function launchShot(vx,vy){
       marbles.push({x:shooterPos.x,y:shooterPos.y,vx,vy,team:activeTeam,val:spec.val,spec,touchedByOpp:false});
     }
   }else{
-    const shooterName=activeTeam===0?'Red Team':(vsAI?selectedRival.name:'White Team');
+    const shooterName=activeTeam===0?'Home Red':(vsAI?selectedRival.name:'Away White');
     selectedBall.vx=vx;selectedBall.vy=vy;
     addLog(`${shooterName} shoots ${selectedBall.isLeader?'Leader Ball':'ball'}.`);
     setReferee(`${shooterName} fires!`);
@@ -1293,7 +1339,6 @@ canvas.addEventListener('pointerdown',e=>{
   const px=(e.clientX-rect.left)*(W/rect.width);
   const py=(e.clientY-rect.top)*(H/rect.height);
 
-  // In Bumper Pool, allow clicking any eligible ball on your team (if Leader is already sunk)
   if(gameType==='bumper'){
     const myBalls=marbles.filter(m=>m.team===activeTeam && !m.sunk);
     const leader=myBalls.find(m=>m.isLeader);
@@ -1357,7 +1402,8 @@ function stepPhysics(){
   let bigElimination=false;
   const cx=W/2,cy=H/2;
   const rad=gameType==='void'?R:BP_R;
-  const minBound=PLAY_MIN+rad,maxBound=PLAY_MAX-rad;
+  const minX=PLAY_MIN_X+rad,maxX=PLAY_MAX_X-rad;
+  const minY=PLAY_MIN_Y+rad,maxY=PLAY_MAX_Y-rad;
 
   for(let i=marbles.length-1;i>=0;i--){
     const m=marbles[i];
@@ -1366,17 +1412,16 @@ function stepPhysics(){
     m.vx*=0.985;m.vy*=0.985;
 
     let bounced=false;
-    if(m.x<minBound){m.x=minBound;m.vx=Math.abs(m.vx)*0.84;bounced=true;}
-    if(m.x>maxBound){m.x=maxBound;m.vx=-Math.abs(m.vx)*0.84;bounced=true;}
-    if(m.y<minBound){m.y=minBound;m.vy=Math.abs(m.vy)*0.84;bounced=true;}
-    if(m.y>maxBound){m.y=maxBound;m.vy=-Math.abs(m.vy)*0.84;bounced=true;}
+    if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;bounced=true;}
+    if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.84;bounced=true;}
+    if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.84;bounced=true;}
+    if(m.y>maxY){m.y=maxY;m.vy=-Math.abs(m.vy)*0.84;bounced=true;}
     if(bounced){
       const sp=Math.hypot(m.vx,m.vy);
       if(sp>1.4){playSFX('clack',sp/12);spawnParticles(m.x,m.y,'#e9d5ff',5);}
     }
 
     if(gameType==='void'){
-      // Void Edge Gravity Slope & Pit
       const dx=cx-m.x,dy=cy-m.y;
       if(Math.abs(dx)<SLOPE_HALF && Math.abs(dy)<SLOPE_HALF){
         const dist=Math.hypot(dx,dy)||1;
@@ -1430,8 +1475,7 @@ function stepPhysics(){
           if(phase==='bp_lag_moving'){
             setReferee('LAG SCRATCH! Ball dropped in pocket during shootout!');
           }else{
-            const teamLabel=m.team===0?'Red Team':'White Team';
-            // Did ball drop in its intended target pocket?
+            const teamLabel=m.team===0?'Home Red':'Away White';
             if(pk.owner!==m.team){
               const hadOtherLeader=marbles.some(x=>x.team===m.team && x.isLeader && !x.sunk);
               if(hadOtherLeader && !m.isLeader){
@@ -1445,7 +1489,6 @@ function stepPhysics(){
                 if(m.isLeader)bigElimination=true;
               }
             }else{
-              // Dropped into own home pocket (scratch/penalty)
               const msg=`SCRATCH! ${teamLabel}'s ball fell into their own pocket — spotted at center!`;
               setReferee(msg);addLog(msg);
               spotBallOnCenter(m);
@@ -1527,7 +1570,6 @@ function triggerVoidCam(cb){
 }
 
 function finishGame(winnerTeam){
-  // Handle Void Edge Tie -> Sudden Death
   if(winnerTeam===-1 && gameType==='void'){
     suddenDeath=true;moveIdx=0;
     spawnSuddenDeathMarbles(true);
@@ -1541,7 +1583,7 @@ function finishGame(winnerTeam){
 
   const neededToWin=Math.ceil(seriesMax/2);
   if(seriesWins[0]<neededToWin && seriesWins[1]<neededToWin){
-    const gWinner=winnerTeam===0?'Player 1':(vsAI?selectedRival.name:'Player 2');
+    const gWinner=winnerTeam===0?'Home Team':(vsAI?selectedRival.name:'Away Team');
     const msg=`${gWinner} wins Game ${gameNum}! Series is ${seriesWins[0]}–${seriesWins[1]}. Starting Game ${gameNum+1}...`;
     setReferee(msg);addLog(msg);
     gameNum++;
@@ -1562,14 +1604,14 @@ function finishGame(winnerTeam){
     }
     saveData.shards+=earned;
     persist();
-    const msg=`MATCH VICTORY! You defeated ${vsAI?selectedRival.name:'Player 2'} +${earned} ◆`;
+    const msg=`MATCH VICTORY! You defeated ${vsAI?selectedRival.name:'Opponent'} +${earned} ◆`;
     setReferee(msg);addLog(msg);
   }else{
     saveData.record.losses++;
     playSFX('lose');
     saveData.shards+=5;
     persist();
-    const msg=`MATCH DEFEAT! ${vsAI?selectedRival.name:'Player 2'} wins the match. +5 ◆ consolation.`;
+    const msg=`MATCH DEFEAT! ${vsAI?selectedRival.name:'Opponent'} wins the match. +5 ◆ consolation.`;
     setReferee(msg);addLog(msg);
   }
   updateHUD();
@@ -1585,7 +1627,8 @@ function getAimPrediction(){
   let x=shooterPos.x,y=shooterPos.y;
   let hitX=x+nx*260,hitY=y+ny*260,bounceX=null,bounceY=null;
   const rad=gameType==='void'?R:BP_R;
-  const minBound=PLAY_MIN+rad,maxBound=PLAY_MAX-rad;
+  const minX=PLAY_MIN_X+rad,maxX=PLAY_MAX_X-rad;
+  const minY=PLAY_MIN_Y+rad,maxY=PLAY_MAX_Y-rad;
 
   for(let step=0;step<280;step+=3){
     const tx=x+nx*step,ty=y+ny*step;
@@ -1607,12 +1650,12 @@ function getAimPrediction(){
       if(hitObj)break;
     }
 
-    if(tx<=minBound || tx>=maxBound){
+    if(tx<=minX || tx>=maxX){
       hitX=tx;hitY=ty;
       bounceX=hitX-nx*75;bounceY=hitY+ny*75;
       break;
     }
-    if(ty<=minBound || ty>=maxBound){
+    if(ty<=minY || ty>=maxY){
       hitX=tx;hitY=ty;
       bounceX=hitX+nx*75;bounceY=hitY-ny*75;
       break;
@@ -1680,54 +1723,54 @@ function drawTable(theme){
   ctx.fillRect(0,0,W,H);
 
   ctx.fillStyle=theme.tray;
-  ctx.beginPath();ctx.roundRect(cx-122,12,244,42,10);ctx.fill();
-  ctx.beginPath();ctx.roundRect(cx-122,H-54,244,42,10);ctx.fill();
-  ctx.beginPath();ctx.roundRect(14,APRON+10,36,H-(APRON+10)*2,8);ctx.fill();
-  ctx.beginPath();ctx.roundRect(W-50,APRON+10,36,H-(APRON+10)*2,8);ctx.fill();
+  ctx.beginPath();ctx.roundRect(cx-122,10,244,40,10);ctx.fill();
+  ctx.beginPath();ctx.roundRect(cx-122,H-50,244,40,10);ctx.fill();
+  ctx.beginPath();ctx.roundRect(12,APRON+8,34,H-(APRON+8)*2,8);ctx.fill();
+  ctx.beginPath();ctx.roundRect(W-46,APRON+8,34,H-(APRON+8)*2,8);ctx.fill();
 
   ctx.strokeStyle='rgba(255,255,255,0.08)';
   ctx.lineWidth=1;
-  ctx.strokeRect(cx-122,12,244,42);
-  ctx.strokeRect(cx-122,H-54,244,42);
+  ctx.strokeRect(cx-122,10,244,40);
+  ctx.strokeRect(cx-122,H-50,244,40);
 
   // 2. Raised Mitered Rails
-  const bSize=W-APRON*2;
+  const bW=W-APRON*2,bH=H-APRON*2;
   ctx.fillStyle=theme.railOuter;
-  ctx.fillRect(APRON,APRON,bSize,bSize);
+  ctx.fillRect(APRON,APRON,bW,bH);
 
   ctx.fillStyle=theme.railInner;
-  ctx.beginPath();ctx.moveTo(APRON,APRON);ctx.lineTo(W-APRON,APRON);ctx.lineTo(PLAY_MAX,PLAY_MIN);ctx.lineTo(PLAY_MIN,PLAY_MIN);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(APRON,APRON);ctx.lineTo(PLAY_MIN,PLAY_MIN);ctx.lineTo(PLAY_MIN,PLAY_MAX);ctx.lineTo(APRON,H-APRON);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(APRON,APRON);ctx.lineTo(W-APRON,APRON);ctx.lineTo(PLAY_MAX_X,PLAY_MIN_Y);ctx.lineTo(PLAY_MIN_X,PLAY_MIN_Y);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(APRON,APRON);ctx.lineTo(PLAY_MIN_X,PLAY_MIN_Y);ctx.lineTo(PLAY_MIN_X,PLAY_MAX_Y);ctx.lineTo(APRON,H-APRON);ctx.closePath();ctx.fill();
   ctx.fillStyle='#090312';
-  ctx.beginPath();ctx.moveTo(APRON,H-APRON);ctx.lineTo(PLAY_MIN,PLAY_MAX);ctx.lineTo(PLAY_MAX,PLAY_MAX);ctx.lineTo(W-APRON,H-APRON);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(APRON,H-APRON);ctx.lineTo(PLAY_MIN_X,PLAY_MAX_Y);ctx.lineTo(PLAY_MAX_X,PLAY_MAX_Y);ctx.lineTo(W-APRON,H-APRON);ctx.closePath();ctx.fill();
   ctx.fillStyle='#140726';
-  ctx.beginPath();ctx.moveTo(W-APRON,APRON);ctx.lineTo(W-APRON,H-APRON);ctx.lineTo(PLAY_MAX,PLAY_MAX);ctx.lineTo(PLAY_MAX,PLAY_MIN);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(W-APRON,APRON);ctx.lineTo(W-APRON,H-APRON);ctx.lineTo(PLAY_MAX_X,PLAY_MAX_Y);ctx.lineTo(PLAY_MAX_X,PLAY_MIN_Y);ctx.closePath();ctx.fill();
 
   ctx.strokeStyle='rgba(255,255,255,0.16)';
   ctx.lineWidth=1.5;
-  ctx.strokeRect(APRON+0.5,APRON+0.5,bSize-1,bSize-1);
+  ctx.strokeRect(APRON+0.5,APRON+0.5,bW-1,bH-1);
 
   // 3. Woven Felt Playing Surface
-  const playW=PLAY_MAX-PLAY_MIN;
-  const feltGrad=ctx.createRadialGradient(cx,cy,60,cx,cy,playW*0.65);
+  const playW=PLAY_MAX_X-PLAY_MIN_X,playH=PLAY_MAX_Y-PLAY_MIN_Y;
+  const feltGrad=ctx.createRadialGradient(cx,cy,60,cx,cy,Math.max(playW,playH)*0.65);
   feltGrad.addColorStop(0,theme.felt);
   feltGrad.addColorStop(1,theme.feltDark);
   ctx.fillStyle=feltGrad;
-  ctx.fillRect(PLAY_MIN,PLAY_MIN,playW,playW);
+  ctx.fillRect(PLAY_MIN_X,PLAY_MIN_Y,playW,playH);
 
   if(feltPattern){
     ctx.fillStyle=feltPattern;
-    ctx.fillRect(PLAY_MIN,PLAY_MIN,playW,playW);
+    ctx.fillRect(PLAY_MIN_X,PLAY_MIN_Y,playW,playH);
   }
 
   ctx.save();
-  ctx.beginPath();ctx.rect(PLAY_MIN,PLAY_MIN,playW,playW);ctx.clip();
+  ctx.beginPath();ctx.rect(PLAY_MIN_X,PLAY_MIN_Y,playW,playH);ctx.clip();
   ctx.strokeStyle='rgba(0,0,0,0.68)';
   ctx.lineWidth=12;
-  ctx.strokeRect(PLAY_MIN,PLAY_MIN,playW,playW);
+  ctx.strokeRect(PLAY_MIN_X,PLAY_MIN_Y,playW,playH);
   ctx.restore();
 
-  // 4. Exterior Reserve Trays (Void Edge Draft OR Bumper Pool Sunk Ball Tray)
+  // 4. Exterior Reserve Trays & Mode-Specific Obstacles
   if(gameType==='void'){
     if(!suddenDeath){
       const p1Drafted=phase==='title'?0:Math.floor((moveIdx + (order[0]===0?1:0))/2);
@@ -1735,21 +1778,21 @@ function drawTable(theme){
 
       for(let idx=0;idx<5;idx++){
         const rosterIdx=4-idx;
-        const rx=cx - 88 + idx*44,ry=33;
+        const rx=cx - 88 + idx*44,ry=30;
         ctx.fillStyle='rgba(0,0,0,0.55)';
         ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
-        if(rosterIdx>=p2Drafted)drawGlossyMarble(rx,ry,ROSTER[rosterIdx],1,true,15.5,false);
+        if(rosterIdx>=p2Drafted)drawGlossyMarble(rx,ry,ROSTER[rosterIdx],1,true,15,false);
       }
       for(let idx=0;idx<5;idx++){
         const rosterIdx=idx;
-        const rx=cx - 88 + idx*44,ry=H - 33;
+        const rx=cx - 88 + idx*44,ry=H - 30;
         ctx.fillStyle='rgba(0,0,0,0.55)';
         ctx.beginPath();ctx.arc(rx,ry,9,0,Math.PI*2);ctx.fill();
-        if(rosterIdx>=p1Drafted)drawGlossyMarble(rx,ry,ROSTER[rosterIdx],0,false,15.5,false);
+        if(rosterIdx>=p1Drafted)drawGlossyMarble(rx,ry,ROSTER[rosterIdx],0,false,15,false);
       }
     }
 
-    // 5A. Void Edge Beveled Metallic Funnel & Void Pit
+    // Void Edge Beveled Metallic Funnel & Void Pit
     const ox1=cx-SLOPE_HALF,oy1=cy-SLOPE_HALF,ox2=cx+SLOPE_HALF,oy2=cy+SLOPE_HALF;
     const ix1=cx-HOLE_HALF,iy1=cy-HOLE_HALF,ix2=cx+HOLE_HALF,iy2=cy+HOLE_HALF;
 
@@ -1803,26 +1846,24 @@ function drawTable(theme){
     ctx.lineWidth=1.5;
     ctx.beginPath();ctx.arc(cx,cy,VOID_R,0.2,Math.PI*1.1);ctx.stroke();
   }else{
-    // 5B. Classic Bumper Pool Pockets, Center Spot & 12 Rubber Posts
-    // Exterior trays show sunk balls!
+    // Bumper Pool Sunk Ball Trays (Top = Home Sunk, Bottom = CPU Sunk)
     const p1Sunk=marbles.filter(m=>m.team===0 && m.sunk);
     const p2Sunk=marbles.filter(m=>m.team===1 && m.sunk);
     for(let idx=0;idx<5;idx++){
       const rx=cx - 88 + idx*44;
       ctx.fillStyle='rgba(0,0,0,0.55)';
-      ctx.beginPath();ctx.arc(rx,33,9,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(rx,H-33,9,0,Math.PI*2);ctx.fill();
-      if(p1Sunk[idx])drawGlossyMarble(rx,33,p1Sunk[idx].spec,0,false,14,p1Sunk[idx].isLeader);
-      if(p2Sunk[idx])drawGlossyMarble(rx,H-33,p2Sunk[idx].spec,1,false,14,p2Sunk[idx].isLeader);
+      ctx.beginPath();ctx.arc(rx,30,9,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(rx,H-30,9,0,Math.PI*2);ctx.fill();
+      if(p1Sunk[idx])drawGlossyMarble(rx,30,p1Sunk[idx].spec,0,false,13.5,p1Sunk[idx].isLeader);
+      if(p2Sunk[idx])drawGlossyMarble(rx,H-30,p2Sunk[idx].spec,1,false,13.5,p2Sunk[idx].isLeader);
     }
 
     // Center Penalty Spot Dot
-    ctx.fillStyle='rgba(255,255,255,0.35)';
+    ctx.fillStyle='rgba(255,255,255,0.45)';
     ctx.beginPath();ctx.arc(cx,cy,4.5,0,Math.PI*2);ctx.fill();
 
-    // Target Goal Pockets (Top & Bottom)
+    // Target Goal Pockets (Left = Home Pocket, Right = CPU Pocket)
     BP_POCKETS.forEach(pk=>{
-      // Outer metallic/team colored ring
       ctx.fillStyle='rgba(0,0,0,0.5)';
       ctx.beginPath();ctx.arc(pk.x,pk.y+2,BP_POCKET_R+5,0,Math.PI*2);ctx.fill();
 
@@ -1834,31 +1875,35 @@ function drawTable(theme){
       ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R,0,Math.PI*2);ctx.fill();
     });
 
-    // 12 Central Rubber-Cushioned Bumper Posts
-    BP_BUMPERS.forEach(bp=>{
+    // 12 Classic White & Red Capped Bumper Posts (matching real bumper pool tables)
+    BP_BUMPERS.forEach((bp,idx)=>{
       ctx.fillStyle='rgba(0,0,0,0.55)';
       ctx.beginPath();ctx.arc(bp.x+2.5,bp.y+3.5,BP_POST_R,0,Math.PI*2);ctx.fill();
 
-      const bg=ctx.createRadialGradient(bp.x-4,bp.y-4,2,bp.x,bp.y,BP_POST_R);
+      // Alternate Red & Cream bumper caps just like the authentic table photo
+      const isRedCap=(idx%2===1);
+      const bg=ctx.createRadialGradient(bp.x-3.5,bp.y-3.5,2,bp.x,bp.y,BP_POST_R);
       bg.addColorStop(0,'#ffffff');
-      bg.addColorStop(0.45,'#cbd5e1');
-      bg.addColorStop(0.85,'#475569');
-      bg.addColorStop(1,'#0f172a');
+      bg.addColorStop(0.55,'#f1f5f9');
+      bg.addColorStop(0.9,'#94a3b8');
+      bg.addColorStop(1,'#1e293b');
       ctx.fillStyle=bg;
       ctx.beginPath();ctx.arc(bp.x,bp.y,BP_POST_R,0,Math.PI*2);ctx.fill();
 
-      // Rubber bumper ring
-      ctx.strokeStyle='#22d3ee';
-      ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(bp.x,bp.y,BP_POST_R-1,0,Math.PI*2);ctx.stroke();
+      // Center colored cap button
+      ctx.fillStyle=isRedCap?'#dc2626':'#e2e8f0';
+      ctx.beginPath();ctx.arc(bp.x,bp.y,BP_POST_R*0.52,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(15,23,42,0.45)';
+      ctx.lineWidth=1;
+      ctx.stroke();
     });
   }
 
-  // 6. Exterior Resting Pool Cues
+  // 6. Exterior Resting Pool Cues (Left = Home Cue, Right = CPU Cue)
   const p1Holding=(phase==='aim' && activeTeam===0 && aiming);
   const p2Holding=(phase==='aim' && activeTeam===1 && aiming);
-  if(!p1Holding)drawTaperedCue(32,APRON+24,32,H-APRON-24);
-  if(!p2Holding)drawTaperedCue(W-32,H-APRON-24,W-32,APRON+24);
+  if(!p1Holding)drawTaperedCue(29,APRON+20,29,H-APRON-20);
+  if(!p2Holding)drawTaperedCue(W-29,H-APRON-20,W-29,APRON+20);
 }
 
 function drawGlossyMarble(x,y,spec,team,upsideDown=false,radius=R,isLeader=false){
@@ -1874,14 +1919,16 @@ function drawGlossyMarble(x,y,spec,team,upsideDown=false,radius=R,isLeader=false
   ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();
 
   ctx.strokeStyle=isLeader?'#facc15':(team===0?'rgba(34,211,238,0.65)':'rgba(250,204,21,0.55)');
-  ctx.lineWidth=isLeader?2.6:1.4;
+  ctx.lineWidth=isLeader?2.4:1.4;
   ctx.beginPath();ctx.arc(x,y,radius-0.6,0,Math.PI*2);ctx.stroke();
 
-  // Leader Ball inner gold ring
+  // Spotted Leader Ball Ring
   if(isLeader){
-    ctx.strokeStyle='#facc15';
-    ctx.lineWidth=1.8;
-    ctx.beginPath();ctx.arc(x,y,radius*0.52,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#fef08a';
+    ctx.beginPath();ctx.arc(x,y,radius*0.38,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#0f172a';
+    ctx.lineWidth=1.2;
+    ctx.stroke();
   }
 
   ctx.fillStyle='rgba(255,255,255,0.45)';
@@ -1968,7 +2015,7 @@ function draw(){
 
   // 3-2-1 Lag Countdown Banner on Canvas
   if(phase==='bp_lag_countdown'){
-    ctx.fillStyle='rgba(6,3,14,0.72)';
+    ctx.fillStyle='rgba(6,3,14,0.78)';
     ctx.beginPath();ctx.roundRect(W/2-115,H/2-42,230,84,14);ctx.fill();
     ctx.strokeStyle='#facc15';ctx.lineWidth=2.5;ctx.stroke();
     ctx.fillStyle='#facc15';
