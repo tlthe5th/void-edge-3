@@ -371,10 +371,10 @@ footer a{color:var(--cyan);text-decoration:none}
         &bull; <b>Gravity Funnel &amp; Touch Rule:</b> Knock enemy marbles into the central Void pit to score their points. Dropping your own untouched marble in awards 0 points. Tied after 10 shots? Sudden Death 10pt Diamonds!
       </div>
       <div style="background:#190c33;padding:.65rem;border-radius:8px;border-left:3px solid var(--gold)">
-        <strong style="color:var(--gold);font-size:.9rem">MODE B: CLASSIC BUMPER POOL (LEFT vs. RIGHT)</strong><br>
-        &bull; <b>Simultaneous 3-2-1 Bank Lag:</b> Aim and pull back your spotted Leader Ball during the 3-2-1 countdown! When it hits 0, both teams fire their bank shots simultaneously—whoever stops closest to their target pocket shoots first!<br>
-        &bull; <b>Tight Pocket Rim Physics:</b> Pockets are just slightly larger than the balls—shots hit too hard or off-center can swirl around the rim and lip back out.<br>
-        &bull; <b>Leader Ball First:</b> Sink your spotted <b>Leader Ball</b> into your opponent's goal pocket before sinking your remaining 4 balls. Score to earn a bonus shot!
+        <strong style="color:var(--gold);font-size:.9rem">MODE B: OFFICIAL BUMPER POOL RULES</strong><br>
+        &bull; <b>Simultaneous Opening Bank Break:</b> Both players bank their marked cue ball off a side rail toward their target pocket on the count of 3. Whoever sinks their ball—or stops closest to their target pocket—keeps the board as-is and shoots next with their next ball in line!<br>
+        &bull; <b>Tie Shootout (Both Sink Simultaneously):</b> If both players sink their ball at the same time on the count of 3, each spots their next ball in line (starting to the right of the opponent's goal) and shoots simultaneously on 3 again until one misses!<br>
+        &bull; <b>Marked Ball First &amp; Penalties:</b> You must sink your marked cue ball first. Sinking another ball early, or dropping your own ball in the wrong cup, awards your opponent 2 free pocketed balls!
       </div>
     </div>
     <div style="text-align:center;margin-top:1rem">
@@ -395,7 +395,7 @@ let PLAY_MIN_Y=APRON+RAIL,PLAY_MAX_Y=H-APRON-RAIL;
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
 // Bumper Pool Geometry — Tight pockets just slightly larger than the 14px balls!
-const BP_R=14,BP_POCKET_R=16.5,BP_POST_R=12.5;
+const BP_R=14,BP_POCKET_R=14.8,BP_POST_R=12.5;
 let BP_POCKETS=[];
 let BP_BUMPERS=[];
 
@@ -424,8 +424,8 @@ function syncTableDimensions(){
 
   // Authentic 12-Bumper Layout: 2 flanking each pocket + 8 in a central '+' cross
   BP_BUMPERS=[
-    {x:leftPkX,y:cy-38},{x:leftPkX,y:cy+38},
-    {x:rightPkX,y:cy-38},{x:rightPkX,y:cy+38},
+    {x:leftPkX,y:cy-37},{x:leftPkX,y:cy+37},
+    {x:rightPkX,y:cy-37},{x:rightPkX,y:cy+37},
     {x:cx,y:cy-38},{x:cx,y:cy-82},
     {x:cx,y:cy+38},{x:cx,y:cy+82},
     {x:cx-42,y:cy},{x:cx-88,y:cy},
@@ -524,9 +524,10 @@ let shotLogs=[];
 
 // Bumper Pool Specific State
 let selectedBall=null;
-let bpLagTimer=null,bpLagCountdown=0,bpLagBalls=[];
-let bpLagShots=[null,null]; // Stored {vx, vy} for simultaneous release
-let bpLagTurn=0;            // For 2P local pass-and-play lag setup
+let bpLagTimer=null,bpLagCountdown=0,bpLagBalls=[null,null];
+let bpLagShots=[null,null];
+let bpLagTurn=0;
+let bpLagRound=0;
 let bpScoredOwnThisTurn=false;
 
 // Void Cam Replay State
@@ -536,29 +537,29 @@ let replayFrames=[];
 let replayIdx=0;
 let postReplayCallback=null;
 
-// Audio Engine (Includes Classical Minuet!)
+// Audio Engine
 let audioCtx=null,jukeboxTrack=0,musicTimeout=null;
 const TRACK_NAMES=['OFF','1: Classical Minuet','2: Void Chase','3: Abyss Drift','4: Neon Duel'];
 const TRACKS=[
   [],
-  // Track 1: Bach/Mozart-inspired Classical Minuet in G Major
+  // Track 1: Classical Minuet in G Major
   [
-    {f:587.33,b:196.00,d:320,w:'triangle',g:0.075}, // D5 / G3
-    {f:392.00,b:246.94,d:160,w:'triangle',g:0.065}, // G4 / B3
-    {f:440.00,b:246.94,d:160,w:'triangle',g:0.065}, // A4
-    {f:493.88,b:293.66,d:160,w:'triangle',g:0.065}, // B4 / D4
-    {f:523.25,b:293.66,d:160,w:'triangle',g:0.065}, // C5
-    {f:587.33,b:196.00,d:320,w:'triangle',g:0.075}, // D5 / G3
-    {f:392.00,b:246.94,d:320,w:'triangle',g:0.065}, // G4 / B3
-    {f:392.00,b:293.66,d:320,w:'triangle',g:0.065}, // G4 / D4
-    {f:659.25,b:261.63,d:320,w:'triangle',g:0.075}, // E5 / C4
-    {f:523.25,b:329.63,d:160,w:'triangle',g:0.065}, // C5 / E4
-    {f:587.33,b:329.63,d:160,w:'triangle',g:0.065}, // D5
-    {f:659.25,b:261.63,d:160,w:'triangle',g:0.065}, // E5 / C4
-    {f:739.99,b:261.63,d:160,w:'triangle',g:0.065}, // F#5
-    {f:783.99,b:196.00,d:320,w:'triangle',g:0.080}, // G5 / G3
-    {f:392.00,b:246.94,d:320,w:'triangle',g:0.065}, // G4 / B3
-    {f:392.00,b:293.66,d:320,w:'triangle',g:0.065}  // G4 / D4
+    {f:587.33,b:196.00,d:320,w:'triangle',g:0.075},
+    {f:392.00,b:246.94,d:160,w:'triangle',g:0.065},
+    {f:440.00,b:246.94,d:160,w:'triangle',g:0.065},
+    {f:493.88,b:293.66,d:160,w:'triangle',g:0.065},
+    {f:523.25,b:293.66,d:160,w:'triangle',g:0.065},
+    {f:587.33,b:196.00,d:320,w:'triangle',g:0.075},
+    {f:392.00,b:246.94,d:320,w:'triangle',g:0.065},
+    {f:392.00,b:293.66,d:320,w:'triangle',g:0.065},
+    {f:659.25,b:261.63,d:320,w:'triangle',g:0.075},
+    {f:523.25,b:329.63,d:160,w:'triangle',g:0.065},
+    {f:587.33,b:329.63,d:160,w:'triangle',g:0.065},
+    {f:659.25,b:261.63,d:160,w:'triangle',g:0.065},
+    {f:739.99,b:261.63,d:160,w:'triangle',g:0.065},
+    {f:783.99,b:196.00,d:320,w:'triangle',g:0.080},
+    {f:392.00,b:246.94,d:320,w:'triangle',g:0.065},
+    {f:392.00,b:293.66,d:320,w:'triangle',g:0.065}
   ],
   // Track 2: Void Chase
   [
@@ -625,7 +626,6 @@ function playSFX(type,intensity=1){
       gain.gain.linearRampToValueAtTime(0.005,now+0.055);
       osc.start(now);osc.stop(now+0.055);
     }else if(type==='score'){
-      // Bright, upbeat ascending chord chime when scoring a point or sinking a goal!
       [523.25,659.25,783.99,1046.50].forEach((f,idx)=>{
         const o=c.createOscillator(),g=c.createGain();
         o.type='triangle';o.connect(g);g.connect(c.destination);
@@ -635,7 +635,6 @@ function playSFX(type,intensity=1){
         o.start(now+idx*0.055);o.stop(now+idx*0.055+0.22);
       });
     }else if(type==='void'){
-      // Low descending rumble strictly for unforced falls / scratches
       const osc=c.createOscillator(),gain=c.createGain();
       osc.connect(gain);gain.connect(c.destination);
       osc.type='sawtooth';
@@ -689,7 +688,6 @@ function stepJukebox(i){
       g.gain.exponentialRampToValueAtTime(0.001,now+dur*0.92);
       o.start(now);o.stop(now+dur);
 
-      // Classical accompaniment bass note or sub-harmonic
       if(note.b || jukeboxTrack===3){
         const bassFreq=note.b || note.f*0.5;
         const o2=c.createOscillator(),g2=c.createGain();
@@ -718,7 +716,7 @@ function setGameType(type){
   document.getElementById('overlayLogo').textContent=isVoid?'VOID EDGE 3.0':'BUMPER POOL';
   document.getElementById('overlayTag').textContent=isVoid
     ?'Five Tiers of Warriors. One Gravity Abyss.'
-    :'3-2-1 Bank Shootout. 12 Posts. Leader Ball First.';
+    :'Simultaneous 3-2-1 Bank Break. Tight Pockets. Official Rules.';
   document.getElementById('p1Name').textContent=isVoid?'GRADIENTS (LEFT)':'HOME RED (LEFT)';
   document.getElementById('p2Name').textContent=vsAI?selectedRival.name.toUpperCase():(isVoid?'VECTORS (RIGHT)':'AWAY WHITE (RIGHT)');
   updateHUD();
@@ -858,7 +856,7 @@ function resetMatch(newSeries=true){
     updateHUD();
     initCoin();
   }else{
-    startBumperPoolLag();
+    startBumperPoolMatch();
   }
 }
 
@@ -929,7 +927,7 @@ function startVoidTurn(){
 }
 
 // ==========================================
-// MODE B: BUMPER POOL + INTERACTIVE 3-2-1 BANK SHOOTOUT
+// MODE B: OFFICIAL BUMPER POOL + SIMULTANEOUS 3-2-1 BANK BREAK & TIE-BREAKER
 // ==========================================
 function setupBumperPoolBalls(){
   marbles=[];
@@ -940,66 +938,100 @@ function setupBumperPoolBalls(){
   const leftX=PLAY_MIN_X+26;
   const rightX=PLAY_MAX_X-26;
 
-  const yOffsets=[-118,-78,0,78,118];
-  yOffsets.forEach((dy,idx)=>{
-    const isLeader=(idx===2);
-    marbles.push({
-      x:isLeader?leftX+34:leftX,
-      y:cy+dy,
-      vx:0,vy:0,team:0,val:1,
-      spec:redSpec,isLeader,sunk:false
-    });
-    marbles.push({
-      x:isLeader?rightX-34:rightX,
-      y:cy+dy,
-      vx:0,vy:0,team:1,val:1,
-      spec:whiteSpec,isLeader,sunk:false
-    });
+  // Ordered sequence of balls for each team:
+  // seq 0 = Marked Leader Ball (in front of pocket)
+  // seq 1..4 = Remaining balls starting with the ball to the right of the opponent's goal!
+  // For Home Red (Left, facing Right pocket): "right" of opponent's goal = bottom side (+Y), then top side (-Y)
+  // For Away White (Right, facing Left pocket): "right" of opponent's goal = top side (-Y), then bottom side (+Y)
+  const redLayout=[
+    {x:leftX+34,y:cy,seq:0,isLeader:true},     // Marked cue ball
+    {x:leftX,y:cy+78,seq:1,isLeader:false},   // Next in line (to right of target goal)
+    {x:leftX,y:cy+118,seq:2,isLeader:false},
+    {x:leftX,y:cy-78,seq:3,isLeader:false},
+    {x:leftX,y:cy-118,seq:4,isLeader:false}
+  ];
+  const whiteLayout=[
+    {x:rightX-34,y:cy,seq:0,isLeader:true},   // Marked cue ball
+    {x:rightX,y:cy-78,seq:1,isLeader:false},  // Next in line (to right of target goal)
+    {x:rightX,y:cy-118,seq:2,isLeader:false},
+    {x:rightX,y:cy+78,seq:3,isLeader:false},
+    {x:rightX,y:cy+118,seq:4,isLeader:false}
+  ];
+
+  redLayout.forEach(p=>{
+    marbles.push({x:p.x,y:p.y,vx:0,vy:0,team:0,val:1,spec:redSpec,seq:p.seq,isLeader:p.isLeader,sunk:false});
+  });
+  whiteLayout.forEach(p=>{
+    marbles.push({x:p.x,y:p.y,vx:0,vy:0,team:1,val:1,spec:whiteSpec,seq:p.seq,isLeader:p.isLeader,sunk:false});
   });
 }
 
-// Compute a clean, calibrated bank shot for the CPU during the 3-2-1 Lag Shootout
-function computeCpuLagShot(){
-  const p2Lead=marbles.find(m=>m.team===1 && m.isLeader);
+function getNextInLineBall(team){
+  const unsunk=marbles.filter(m=>m.team===team && !m.sunk).sort((a,b)=>a.seq-b.seq);
+  return unsunk[0]||null;
+}
+
+// Compute calibrated CPU bank shot from `ball` toward Left Pocket (`BP_POCKETS[0]`)
+function computeCpuLagShot(ball){
   const leftPocket=BP_POCKETS[0];
-  // Aim toward the upper or lower rail near the left pocket so it banks gently near the hole
+  // Aim at top or bottom cushion near left pocket so it banks into or right beside the cup
   const railY=(Math.random()<0.5)?(PLAY_MIN_Y+BP_R):(PLAY_MAX_Y-BP_R);
-  const bankX=leftPocket.x + 28 + (Math.random()*24-12);
-  const ang=Math.atan2(railY-p2Lead.y,bankX-p2Lead.x);
-  // Calibrated speed (~9.4 to 10.6) so it stops right near the Left Pocket after banking
-  const spd=9.5 + (Math.random()*1.1);
+  const bankX=leftPocket.x + 18 + (Math.random()*22-11);
+  const ang=Math.atan2(railY-ball.y,bankX-ball.x);
+  const spd=9.6 + (Math.random()*1.2);
   return {vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd};
 }
 
-function startBumperPoolLag(){
+function startBumperPoolMatch(){
   setupBumperPoolBalls();
-  const p1Lead=marbles.find(m=>m.team===0 && m.isLeader);
-  const p2Lead=marbles.find(m=>m.team===1 && m.isLeader);
-  bpLagBalls=[p1Lead,p2Lead];
+  bpLagRound=0;
+  startBumperPoolSimultaneousRound(false);
+}
+
+// Starts either Round 0 (Opening Bank Break with marked balls)
+// or Round 1+ (Tie-breaker when both players sink their ball simultaneously on the count of 3!)
+function startBumperPoolSimultaneousRound(isTieBreaker){
+  clearTimers();
+  const p1Ball=getNextInLineBall(0);
+  const p2Ball=getNextInLineBall(1);
+
+  if(!p1Ball){finishGame(0);return;}
+  if(!p2Ball){finishGame(1);return;}
+
+  // Official rule: If both marked balls are pocketed on first shots, each player takes the next ball
+  // in line (starting to the right of their opponent's goal), spots it in front of the pocket, and shoots on 3!
+  if(isTieBreaker){
+    p1Ball.x=PLAY_MIN_X+60;p1Ball.y=H/2;p1Ball.vx=0;p1Ball.vy=0;
+    p2Ball.x=PLAY_MAX_X-60;p2Ball.y=H/2;p2Ball.vx=0;p2Ball.vy=0;
+  }
+
+  bpLagBalls=[p1Ball,p2Ball];
   bpLagShots=[null,null];
   bpLagTurn=0;
 
   if(vsAI){
-    // Pre-calculate CPU's simultaneous bank shot and start the live 3-2-1 countdown while Player aims!
-    bpLagShots[1]=computeCpuLagShot();
-    selectedBall=p1Lead;
-    shooterPos={x:p1Lead.x,y:p1Lead.y};
+    bpLagShots[1]=computeCpuLagShot(p2Ball);
+    selectedBall=p1Ball;
+    shooterPos={x:p1Ball.x,y:p1Ball.y};
     activeTeam=0;
     phase='bp_lag_aim';
     bpLagCountdown=4;
     updateHUD();
-    setReferee(`3-2-1 LAG SHOOTOUT (${bpLagCountdown}s): Aim & release your bank shot toward the Right Pocket!`);
-    addLog('3-2-1 Bank Shootout started! Aim your bank shot before the countdown hits 0!');
+
+    const label=isTieBreaker
+      ?'BOTH SANK! Next ball spotted — bank shot on 3!'
+      :'OPENING BANK BREAK (3-2-1): Bank off side rail toward Right Pocket!';
+    setReferee(`${label} (${bpLagCountdown}s)`);
+    addLog(isTieBreaker?'Tie-breaker simultaneous bank shot initiated!':'Opening simultaneous bank break started!');
     playSFX('beep',1);
 
     bpLagTimer=setInterval(()=>{
       bpLagCountdown--;
       if(bpLagCountdown>0){
-        setReferee(`3-2-1 LAG SHOOTOUT (${bpLagCountdown}s): Release your bank shot! Closest to hole goes 1st!`);
+        setReferee(`SHOOT ON 3 (${bpLagCountdown}s): Aim & release your bank shot toward the Right Pocket!`);
         playSFX('beep',1);
       }else{
         clearInterval(bpLagTimer);bpLagTimer=null;
-        // If player didn't release before 0, fire along their current aim vector or default bank shot
         if(!bpLagShots[0]){
           if(aiming){
             aiming=false;updatePowerUI(0);
@@ -1015,13 +1047,14 @@ function startBumperPoolLag(){
       }
     },950);
   }else{
-    // 2-Player Local Pass-and-Play: P1 locks bank shot, then P2 locks bank shot, then 3-2-1 simultaneous fire!
-    selectedBall=p1Lead;
-    shooterPos={x:p1Lead.x,y:p1Lead.y};
+    selectedBall=p1Ball;
+    shooterPos={x:p1Ball.x,y:p1Ball.y};
     activeTeam=0;
     phase='bp_lag_aim';
     updateHUD();
-    setReferee('2P LAG SHOOTOUT: Home Red (Left), aim & release your bank shot first!');
+    setReferee(isTieBreaker
+      ?'BOTH SANK! Home Red (Left), aim next spotted ball for simultaneous count-of-3 shot!'
+      :'2P BANK BREAK: Home Red (Left), aim & lock your bank shot first!');
   }
 }
 
@@ -1029,7 +1062,7 @@ function fireSimultaneousLagShots(){
   phase='bp_lag_moving';
   aiming=false;
   updatePowerUI(0);
-  setReferee('SHOOT! Both bank shots released simultaneously!');
+  setReferee('3... 2... 1... SHOOT! Both bank shots released simultaneously!');
   playSFX('beep',2);
   playSFX('launch',1);
 
@@ -1040,45 +1073,71 @@ function fireSimultaneousLagShots(){
 }
 
 function resolveBumperPoolLag(){
-  const p1Lead=bpLagBalls[0];
-  const p2Lead=bpLagBalls[1];
-  const p1Target=BP_POCKETS[1]; // Home Team (Left) targets Right Pocket
-  const p2Target=BP_POCKETS[0]; // CPU / Away (Right) targets Left Pocket
+  const p1Ball=bpLagBalls[0];
+  const p2Ball=bpLagBalls[1];
+  const p1Target=BP_POCKETS[1]; // Home Red (Left) shoots at Right Pocket
+  const p2Target=BP_POCKETS[0]; // CPU / Away White (Right) shoots at Left Pocket
 
-  const d1=p1Lead.sunk?9999:Math.hypot(p1Lead.x-p1Target.x,p1Lead.y-p1Target.y);
-  const d2=p2Lead.sunk?9999:Math.hypot(p2Lead.x-p2Target.x,p2Lead.y-p2Target.y);
+  // Check if either or both sank their shot in their target pocket!
+  const p1Scored=(p1Ball.sunk && p1Ball._sunkInTarget===true);
+  const p2Scored=(p2Ball.sunk && p2Ball._sunkInTarget===true);
 
-  // Reset balls cleanly to starting rack after the lag shootout
-  setupBumperPoolBalls();
+  const p1Remaining=marbles.filter(m=>m.team===0 && !m.sunk).length;
+  const p2Remaining=marbles.filter(m=>m.team===1 && !m.sunk).length;
+  if(p1Remaining===0){finishGame(0);return;}
+  if(p2Remaining===0){finishGame(1);return;}
 
-  const p1WinsLag=(d1<=d2);
-  activeTeam=p1WinsLag?0:1;
+  // Case 1: BOTH players sank their ball on the count of 3 -> Spot next ball in line and shoot on 3 again!
+  if(p1Scored && p2Scored){
+    bpLagRound++;
+    const msg='BOTH PLAYERS SANK THEIR BALL! Spotting next ball in line (right of opponent\'s goal) — shoot on 3 again!';
+    addLog(msg);
+    setReferee(msg);
+    aiTimer=setTimeout(()=>startBumperPoolSimultaneousRound(true),1250);
+    return;
+  }
+
+  // Case 2: Only ONE player sank their ball -> Balls stay where they lie, and that player shoots next!
+  if(p1Scored || p2Scored){
+    activeTeam=p1Scored?0:1;
+    const winnerName=activeTeam===0?'Home Red (Left)':(vsAI?selectedRival.name:'Away White (Right)');
+    const msg=`${winnerName} SANK THE BANK SHOT! Balls stay where they lie — ${winnerName} shoots next with the next ball in line!`;
+    addLog(msg);
+    startBumperTurn(msg,true);
+    return;
+  }
+
+  // Case 3: Neither sank it -> Balls stay where they lie, closest ball to target pocket shoots first!
+  const d1=(p1Ball.sunk)?9999:Math.hypot(p1Ball.x-p1Target.x,p1Ball.y-p1Target.y);
+  const d2=(p2Ball.sunk)?9999:Math.hypot(p2Ball.x-p2Target.x,p2Ball.y-p2Target.y);
+
+  activeTeam=(d1<=d2)?0:1;
   const winnerName=activeTeam===0?'Home Red (Left)':(vsAI?selectedRival.name:'Away White (Right)');
-  const distText=(d1>=9999 && d2>=9999)?'both scratched!':`(${Math.round(Math.min(d1,d2))}px from hole)`;
-  const msg=`LAG WINNER: ${winnerName} stopped closest ${distText} and takes the opening shot!`;
+  const distText=(d1>=9999 && d2>=9999)?'both scratched!':`(${Math.round(Math.min(d1,d2))}px from goal)`;
+  const msg=`CLOSEST TO GOAL: ${winnerName} stopped closest ${distText} — balls stay in play and ${winnerName} shoots next!`;
   addLog(msg);
-  startBumperTurn(msg);
+  startBumperTurn(msg,false);
 }
 
-function startBumperTurn(customMsg=null){
+function startBumperTurn(customMsg=null,preferNextInLine=false){
   if(aiTimer){clearTimeout(aiTimer);aiTimer=null;}
   bpScoredOwnThisTurn=false;
 
-  const myBalls=marbles.filter(m=>m.team===activeTeam && !m.sunk);
+  const myBalls=marbles.filter(m=>m.team===activeTeam && !m.sunk).sort((a,b)=>a.seq-b.seq);
   const oppBalls=marbles.filter(m=>m.team!==activeTeam && !m.sunk);
   if(myBalls.length===0){finishGame(activeTeam);return;}
   if(oppBalls.length===0){finishGame(1-activeTeam);return;}
 
   const leader=myBalls.find(m=>m.isLeader);
-  selectedBall=leader||myBalls[0];
+  selectedBall=leader||(preferNextInLine?myBalls[0]:myBalls[0]);
   shooterPos={x:selectedBall.x,y:selectedBall.y};
   phase='aim';
   updateHUD();
 
   const pName=activeTeam===0?'Home Red (Left)':(vsAI?selectedRival.name:'Away White (Right)');
-  const mustLeader=leader?' (Must sink spotted Leader Ball first!)':' (Click any of your balls or drag to shoot)';
+  const mustLeader=leader?' (Must sink marked Leader Ball first!)':' (Click any of your balls or drag to shoot)';
   if(vsAI && activeTeam===1){
-    setReferee(customMsg||`${pName} is aiming ${selectedBall.isLeader?'Leader Ball':'White Ball'}...`);
+    setReferee(customMsg||`${pName} is aiming ${selectedBall.isLeader?'Marked Leader Ball':'White Ball'}...`);
     aiTimer=setTimeout(aiShootBumperPool,850);
   }else{
     setReferee(customMsg||`${pName}'s Turn${mustLeader}`);
@@ -1096,6 +1155,20 @@ function spotBallOnCenter(ball){
     }
   }
   ball.x=W/2;ball.y=H/2;
+}
+
+// Official Bumper Pool Penalty: Opponent gets 2 of their own balls dropped into their cup!
+function awardOpponentTwoBalls(offendingTeam,reasonText){
+  const benefactor=1-offendingTeam;
+  const candidates=marbles.filter(m=>m.team===benefactor && !m.sunk).sort((a,b)=>a.seq-b.seq);
+  const toDrop=candidates.slice(0,2);
+  toDrop.forEach(b=>{
+    b.sunk=true;b.vx=0;b.vy=0;
+  });
+  const oppName=benefactor===0?'Home Red':'Away White';
+  const msg=`PENALTY! ${reasonText} — ${oppName} drops ${toDrop.length} ball(s) into their cup!`;
+  setReferee(msg);addLog(msg);
+  updateHUD();
 }
 
 // ==========================================
@@ -1122,12 +1195,12 @@ function updateHUD(){
     document.getElementById('r1').textContent=`Balls Left: ${p1Left} / 5`;
     document.getElementById('r2').textContent=`Balls Left: ${p2Left} / 5`;
     if(phase==='bp_lag_aim'||phase==='bp_lag_moving'){
-      document.getElementById('turnInfo').textContent='3-2-1 LAG';
-      document.getElementById('nextMarble').textContent='Bank Shot — Closest to Hole 1st';
+      document.getElementById('turnInfo').textContent=bpLagRound>0?'TIE BREAK 3-2-1':'BANK BREAK 3-2-1';
+      document.getElementById('nextMarble').textContent='Sink or Closest to Goal Goes Next';
     }else{
       const myLeader=marbles.some(m=>m.team===activeTeam && m.isLeader && !m.sunk);
       document.getElementById('turnInfo').textContent=activeTeam===0?'HOME RED TURN':'AWAY WHITE TURN';
-      document.getElementById('nextMarble').textContent=myLeader?'Objective: Sink Leader Ball':'Objective: Clear Remaining';
+      document.getElementById('nextMarble').textContent=myLeader?'Objective: Sink Marked Ball':'Objective: Clear Remaining';
     }
   }
 
@@ -1265,15 +1338,15 @@ function aiShootVoid(){
   launchShot(bestVx,bestVy);
 }
 
-// Bumper Pool AI Simulator (Accounts for tight pocket lip-out physics!)
+// Bumper Pool AI Simulator (Accounts for tight pocket lip-out physics)
 function simulateBumperShot(ballIdx,vx,vy){
   const minX=PLAY_MIN_X+BP_R,maxX=PLAY_MAX_X-BP_R;
   const minY=PLAY_MIN_Y+BP_R,maxY=PLAY_MAX_Y-BP_R;
   const sim=marbles.map(m=>({x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,isLeader:m.isLeader,sunk:m.sunk}));
   sim[ballIdx].vx=vx;sim[ballIdx].vy=vy;
 
-  const targetPocket=BP_POCKETS[0]; // Left pocket is CPU target
-  const ownPocket=BP_POCKETS[1];    // Right pocket is CPU home pocket
+  const targetPocket=BP_POCKETS[0];
+  const ownPocket=BP_POCKETS[1];
   const hadLeader=sim.some(m=>m.team===1 && m.isLeader && !m.sunk);
 
   let score=0;
@@ -1299,22 +1372,21 @@ function simulateBumperShot(ballIdx,vx,vy){
         }
       }
 
-      // Tight pocket drop vs rim lip-out simulation
       for(const pk of BP_POCKETS){
         const pdx=pk.x-m.x,pdy=pk.y-m.y,pdist=Math.hypot(pdx,pdy);
         const spd=Math.hypot(m.vx,m.vy);
-        if(pdist<BP_POCKET_R*0.62 && spd<11.5){
+        if(pdist<BP_POCKET_R*0.56 && spd<10.5){
           m.sunk=true;
           if(pk===targetPocket){
             if(m.team===1){
-              if(hadLeader && !m.isLeader)score-=450;
-              else score+=1400;
-            }else score-=150;
-          }else score-=650;
-        }else if(pdist<BP_POCKET_R+1.5 && pdist>0.1){
+              if(hadLeader && !m.isLeader)score-=850;
+              else score+=1500;
+            }else score-=120;
+          }else score-=900;
+        }else if(pdist<BP_POCKET_R+1.2 && pdist>0.1){
           const nx=pdx/pdist,ny=pdy/pdist;
-          m.vx+=nx*0.42;m.vy+=ny*0.42;
-          if(spd>9.5){m.vx+=-ny*0.65;m.vy+=nx*0.65;}
+          m.vx+=nx*0.38;m.vy+=ny*0.38;
+          if(spd>8.2){m.vx+=-ny*0.75;m.vy+=nx*0.75;}
         }
       }
 
@@ -1363,7 +1435,7 @@ function aiShootBumperPool(){
     const baseAng=Math.atan2(targetPocket.y-b.y,targetPocket.x-b.x);
     const angles=[baseAng,baseAng-0.12,baseAng+0.12,baseAng-0.25,baseAng+0.25];
     for(let d=115;d<=245;d+=12)angles.push(d*Math.PI/180);
-    const speeds=[6.2,8.8,11.2];
+    const speeds=[5.8,8.2,10.2];
 
     for(const ang of angles){
       for(const spd of speeds){
@@ -1402,7 +1474,7 @@ function launchShot(vx,vy){
   }else{
     const shooterName=activeTeam===0?'Home Red':(vsAI?selectedRival.name:'Away White');
     selectedBall.vx=vx;selectedBall.vy=vy;
-    addLog(`${shooterName} shoots ${selectedBall.isLeader?'Leader Ball':'ball'}.`);
+    addLog(`${shooterName} shoots ${selectedBall.isLeader?'Marked Leader Ball':'ball'}.`);
     setReferee(`${shooterName} fires!`);
   }
   phase='moving';
@@ -1441,7 +1513,6 @@ window.addEventListener('pointerup',()=>{
   const power=Math.min(15,dist/18);
   const vx=(dx/dist)*power,vy=(dy/dist)*power;
 
-  // Handle Player Input during 3-2-1 Lag Shootout
   if(phase==='bp_lag_aim'){
     if(vsAI){
       bpLagShots[0]={vx,vy};
@@ -1456,7 +1527,7 @@ window.addEventListener('pointerup',()=>{
         selectedBall=bpLagBalls[1];
         shooterPos={x:selectedBall.x,y:selectedBall.y};
         updateHUD();
-        setReferee('2P LAG SHOOTOUT: Away White (Right), aim & release your bank shot!');
+        setReferee('2P BANK BREAK: Away White (Right), aim & release your bank shot!');
       }else{
         fireSimultaneousLagShots();
       }
@@ -1569,55 +1640,65 @@ function stepPhysics(){
         }
       }
 
-      // Tight Bumper Pool Pockets with Rim Lip-Out Physics!
+      // Tight Bumper Pool Pockets (`BP_POCKET_R = 14.8`) with Rim Lip-Out Physics!
       for(const pk of BP_POCKETS){
         const pdx=pk.x-m.x,pdy=pk.y-m.y;
         const pdist=Math.hypot(pdx,pdy);
         const spd=Math.hypot(m.vx,m.vy);
 
-        // Clean drop only when ball center is inside the core cup and not blasting over the lip
-        if(pdist<BP_POCKET_R*0.62 && spd<11.5){
+        // Ball only drops when center is well inside the tight cup and speed is controlled
+        if(pdist<BP_POCKET_R*0.56 && spd<10.5){
           shakeTime=10;shakeMag=4;
           spawnParticles(pk.x,pk.y,pk.color,20);
           m.sunk=true;m.vx=0;m.vy=0;
+          m._sunkInTarget=(pk.owner!==m.team);
+
+          const teamLabel=m.team===0?'Home Red':'Away White';
 
           if(phase==='bp_lag_moving'){
-            playSFX('void',1);
-            setReferee('LAG SCRATCH! Ball dropped in pocket during shootout!');
+            if(m._sunkInTarget){
+              playSFX('score',1);
+              setReferee(`BANK GOAL! ${teamLabel} sank their opening bank shot!`);
+            }else{
+              playSFX('void',1);
+              awardOpponentTwoBalls(m.team,`${teamLabel} sank into their own cup on the break`);
+            }
           }else{
-            const teamLabel=m.team===0?'Home Red':'Away White';
-            if(pk.owner!==m.team){
+            if(m._sunkInTarget){
               const hadOtherLeader=marbles.some(x=>x.team===m.team && x.isLeader && !x.sunk);
               if(hadOtherLeader && !m.isLeader){
                 playSFX('void',1);
-                const msg=`FOUL! ${teamLabel} sank a regular ball before their Leader Ball — spotted at center!`;
-                setReferee(msg);addLog(msg);
-                spotBallOnCenter(m);
+                awardOpponentTwoBalls(m.team,`${teamLabel} sank a ball before their marked cue ball`);
               }else{
                 playSFX('score',1);
-                const msg=`GOAL! ${teamLabel} sinks ${m.isLeader?'their LEADER BALL':'a ball'} — SHOOT AGAIN!`;
+                const msg=`GOAL! ${teamLabel} sinks ${m.isLeader?'their marked cue ball':'a ball'} — SHOOT AGAIN!`;
                 setReferee(msg);addLog(msg);
                 if(m.team===activeTeam)bpScoredOwnThisTurn=true;
                 if(m.isLeader)bigElimination=true;
               }
             }else{
               playSFX('void',1);
-              const msg=`SCRATCH! ${teamLabel}'s ball fell into their own pocket — spotted at center!`;
-              setReferee(msg);addLog(msg);
-              spotBallOnCenter(m);
+              const remainingBefore=marbles.filter(x=>x.team===m.team && !x.sunk).length;
+              if(remainingBefore===0){
+                // Official Rule: Sinking your final ball into your opponent's cup loses the game!
+                const msg=`FINAL BALL IN WRONG CUP! ${teamLabel} forfeits the game!`;
+                setReferee(msg);addLog(msg);
+                finishGame(1-m.team);
+                return;
+              }
+              awardOpponentTwoBalls(m.team,`${teamLabel} sank a ball in their own cup`);
             }
           }
           updateHUD();
           break;
-        }else if(pdist<BP_POCKET_R+1.5 && pdist>0.1){
-          // Rim gravity + tangential swirl (allows balls to loop around the lip and spin back out!)
+        }else if(pdist<BP_POCKET_R+1.2 && pdist>0.1){
+          // Tight pocket lip gravity + tangential swirl so off-center/fast hits loop around and spin out!
           const nx=pdx/pdist,ny=pdy/pdist;
-          m.vx+=nx*0.42;
-          m.vy+=ny*0.42;
-          if(spd>9.5){
-            // High-speed rim deflection causes a lip-out swirl
-            m.vx+=-ny*0.68;
-            m.vy+=nx*0.68;
+          m.vx+=nx*0.38;
+          m.vy+=ny*0.38;
+          if(spd>8.2){
+            m.vx+=-ny*0.76;
+            m.vy+=nx*0.76;
           }
         }
       }
@@ -1672,7 +1753,7 @@ function stepPhysics(){
         if(p2Left===0){finishGame(1);return;}
 
         if(!bpScoredOwnThisTurn)activeTeam=1-activeTeam;
-        startBumperTurn();
+        startBumperTurn(null,bpScoredOwnThisTurn);
       }
     };
 
@@ -1984,14 +2065,14 @@ function drawTable(theme){
     ctx.fillStyle='rgba(255,255,255,0.45)';
     ctx.beginPath();ctx.arc(cx,cy,4.5,0,Math.PI*2);ctx.fill();
 
-    // Tight Goal Pockets (Just slightly larger than the 14px balls)
+    // Tight Goal Pockets (`BP_POCKET_R = 14.8` — barely wider than a 14px ball)
     BP_POCKETS.forEach(pk=>{
       ctx.fillStyle='rgba(0,0,0,0.5)';
-      ctx.beginPath();ctx.arc(pk.x,pk.y+1.5,BP_POCKET_R+3.5,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(pk.x,pk.y+1.2,BP_POCKET_R+3,0,Math.PI*2);ctx.fill();
 
       ctx.strokeStyle=pk.color;
-      ctx.lineWidth=2.8;
-      ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R+1.5,0,Math.PI*2);ctx.stroke();
+      ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R+1.2,0,Math.PI*2);ctx.stroke();
 
       ctx.fillStyle='#030108';
       ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R,0,Math.PI*2);ctx.fill();
@@ -2094,7 +2175,6 @@ function draw(){
 
   const rad=gameType==='void'?R:BP_R;
 
-  // Aiming Ring, Trajectory & Active Tapered Cue (active during regular aim AND 3-2-1 Lag Shootout!)
   if((phase==='aim' || phase==='bp_lag_aim') && !isReplaying){
     const teamColor=activeTeam===0?'#22d3ee':'#facc15';
     const pulse=(rad+4)+Math.sin(Date.now()/170)*2.5;
@@ -2133,15 +2213,14 @@ function draw(){
     if(!m.sunk)drawGlossyMarble(m.x,m.y,m.spec,m.team,false,rad,!!m.isLeader);
   });
 
-  // Compact HUD Countdown Pill on top edge of table during 3-2-1 Lag Shootout (leaves full table clear for aiming!)
   if(phase==='bp_lag_aim' && vsAI){
     ctx.fillStyle='rgba(6,3,14,0.84)';
-    ctx.beginPath();ctx.roundRect(W/2-115,PLAY_MIN_Y+10,230,36,999);ctx.fill();
+    ctx.beginPath();ctx.roundRect(W/2-125,PLAY_MIN_Y+10,250,36,999);ctx.fill();
     ctx.strokeStyle='#facc15';ctx.lineWidth=2;ctx.stroke();
     ctx.fillStyle='#facc15';
-    ctx.font='900 17px system-ui,sans-serif';
+    ctx.font='900 16px system-ui,sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(`BANK LAG: ${bpLagCountdown>0?bpLagCountdown:'SHOOT!'}`,W/2,PLAY_MIN_Y+28);
+    ctx.fillText(`SHOOT ON 3: ${bpLagCountdown>0?bpLagCountdown:'FIRE!'}`,W/2,PLAY_MIN_Y+28);
   }
 
   for(let i=particles.length-1;i>=0;i--){
