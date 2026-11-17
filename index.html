@@ -394,8 +394,11 @@ let PLAY_MIN_Y=APRON+RAIL,PLAY_MAX_Y=H-APRON-RAIL;
 
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
-// Bumper Pool Geometry — Tight pockets just slightly larger than the 14px balls!
-const BP_R=14,BP_POCKET_R=14.8,BP_POST_R=12.5;
+// Bumper Pool Geometry:
+// - BP_R = 14px ball radius (28px diameter)
+// - BP_POCKET_R = 13.4px cup radius (tighter than the ball, requires clean controlled entry!)
+// - Guard posts placed 25px from end rails so no 28px ball can ever squeeze behind the goal!
+const BP_R=14,BP_POCKET_R=13.4,BP_POST_R=12.5;
 let BP_POCKETS=[];
 let BP_BUMPERS=[];
 
@@ -415,17 +418,18 @@ function syncTableDimensions(){
   PLAY_MAX_Y=H-APRON-RAIL;
 
   const cx=W/2,cy=H/2;
-  const leftPkX=PLAY_MIN_X+34;
-  const rightPkX=PLAY_MAX_X-34;
+  // 25px from end cushion -> 12.5px gap from post edge to rail (impossible for a 28px ball to pass behind!)
+  const leftPkX=PLAY_MIN_X+25;
+  const rightPkX=PLAY_MAX_X-25;
   BP_POCKETS=[
     {x:leftPkX,y:cy,owner:0,color:'#f87171',label:'HOME POCKET'},
     {x:rightPkX,y:cy,owner:1,color:'#facc15',label:'CPU POCKET'}
   ];
 
-  // Authentic 12-Bumper Layout: 2 flanking each pocket + 8 in a central '+' cross
+  // Authentic 12-Bumper Layout: 2 tight guard posts flanking each pocket + 8 in a central '+' cross
   BP_BUMPERS=[
-    {x:leftPkX,y:cy-37},{x:leftPkX,y:cy+37},
-    {x:rightPkX,y:cy-37},{x:rightPkX,y:cy+37},
+    {x:leftPkX,y:cy-33},{x:leftPkX,y:cy+33},
+    {x:rightPkX,y:cy-33},{x:rightPkX,y:cy+33},
     {x:cx,y:cy-38},{x:cx,y:cy-82},
     {x:cx,y:cy+38},{x:cx,y:cy+82},
     {x:cx-42,y:cy},{x:cx-88,y:cy},
@@ -935,22 +939,23 @@ function setupBumperPoolBalls(){
   const whiteSpec={name:'White Ball',val:1,color:'#f8fafc',hi:'#ffffff',lo:'#64748b',num:''};
 
   const cy=H/2;
-  const leftX=PLAY_MIN_X+26;
-  const rightX=PLAY_MAX_X-26;
+  const leftPkX=BP_POCKETS[0].x;
+  const rightPkX=BP_POCKETS[1].x;
 
+  // Marked leader balls spot directly in front of each pocket; remaining 4 balls line up along the guard row
   const redLayout=[
-    {x:leftX+34,y:cy,seq:0,isLeader:true},
-    {x:leftX,y:cy+78,seq:1,isLeader:false},
-    {x:leftX,y:cy+118,seq:2,isLeader:false},
-    {x:leftX,y:cy-78,seq:3,isLeader:false},
-    {x:leftX,y:cy-118,seq:4,isLeader:false}
+    {x:leftPkX+34,y:cy,seq:0,isLeader:true},
+    {x:leftPkX,y:cy+72,seq:1,isLeader:false},
+    {x:leftPkX,y:cy+110,seq:2,isLeader:false},
+    {x:leftPkX,y:cy-72,seq:3,isLeader:false},
+    {x:leftPkX,y:cy-110,seq:4,isLeader:false}
   ];
   const whiteLayout=[
-    {x:rightX-34,y:cy,seq:0,isLeader:true},
-    {x:rightX,y:cy-78,seq:1,isLeader:false},
-    {x:rightX,y:cy-118,seq:2,isLeader:false},
-    {x:rightX,y:cy+78,seq:3,isLeader:false},
-    {x:rightX,y:cy+118,seq:4,isLeader:false}
+    {x:rightPkX-34,y:cy,seq:0,isLeader:true},
+    {x:rightPkX,y:cy-72,seq:1,isLeader:false},
+    {x:rightPkX,y:cy-110,seq:2,isLeader:false},
+    {x:rightPkX,y:cy+72,seq:3,isLeader:false},
+    {x:rightPkX,y:cy+110,seq:4,isLeader:false}
   ];
 
   redLayout.forEach(p=>{
@@ -969,9 +974,9 @@ function getNextInLineBall(team){
 function computeCpuLagShot(ball){
   const leftPocket=BP_POCKETS[0];
   const railY=(Math.random()<0.5)?(PLAY_MIN_Y+BP_R):(PLAY_MAX_Y-BP_R);
-  const bankX=leftPocket.x + 18 + (Math.random()*22-11);
+  const bankX=leftPocket.x + 28 + (Math.random()*24-12);
   const ang=Math.atan2(railY-ball.y,bankX-ball.x);
-  const spd=9.6 + (Math.random()*1.2);
+  const spd=11.2 + (Math.random()*1.2);
   return {vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd};
 }
 
@@ -990,8 +995,8 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
   if(!p2Ball){finishGame(1);return;}
 
   if(isTieBreaker){
-    p1Ball.x=PLAY_MIN_X+60;p1Ball.y=H/2;p1Ball.vx=0;p1Ball.vy=0;
-    p2Ball.x=PLAY_MAX_X-60;p2Ball.y=H/2;p2Ball.vx=0;p2Ball.vy=0;
+    p1Ball.x=BP_POCKETS[0].x+34;p1Ball.y=H/2;p1Ball.vx=0;p1Ball.vy=0;
+    p2Ball.x=BP_POCKETS[1].x-34;p2Ball.y=H/2;p2Ball.vx=0;p2Ball.vy=0;
   }
 
   bpLagBalls=[p1Ball,p2Ball];
@@ -1025,11 +1030,11 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
           if(aiming){
             aiming=false;updatePowerUI(0);
             const dx=aimPos.x-shooterPos.x,dy=aimPos.y-shooterPos.y,dist=Math.hypot(dx,dy);
-            const pwr=dist>=15?Math.min(15,dist/18):9.6;
+            const pwr=dist>=15?Math.min(15,dist/18):11.2;
             const ang=dist>=15?Math.atan2(dy,dx):-0.26;
             bpLagShots[0]={vx:Math.cos(ang)*pwr,vy:Math.sin(ang)*pwr};
           }else{
-            bpLagShots[0]={vx:Math.cos(-0.26)*9.6,vy:Math.sin(-0.26)*9.6};
+            bpLagShots[0]={vx:Math.cos(-0.26)*11.2,vy:Math.sin(-0.26)*11.2};
           }
         }
         fireSimultaneousLagShots();
@@ -1129,19 +1134,6 @@ function startBumperTurn(customMsg=null,preferNextInLine=false){
   }
 }
 
-function spotBallOnCenter(ball){
-  ball.sunk=false;
-  ball.vx=0;ball.vy=0;
-  const offsets=[[0,0],[-20,-20],[20,-20],[-20,20],[20,20]];
-  for(const [ox,oy] of offsets){
-    const tx=W/2+ox,ty=H/2+oy;
-    if(!marbles.some(m=>!m.sunk && m!==ball && Math.hypot(m.x-tx,m.y-ty)<BP_R*2.1)){
-      ball.x=tx;ball.y=ty;return;
-    }
-  }
-  ball.x=W/2;ball.y=H/2;
-}
-
 function awardOpponentTwoBalls(offendingTeam,reasonText){
   const benefactor=1-offendingTeam;
   const candidates=marbles.filter(m=>m.team===benefactor && !m.sunk).sort((a,b)=>a.seq-b.seq);
@@ -1220,7 +1212,7 @@ function simulateFullBoardVoid(vx,vy){
     for(let i=sim.length-1;i>=0;i--){
       const m=sim[i];
       m.x+=m.vx;m.y+=m.vy;
-      m.vx*=0.985;m.vy*=0.985;
+      m.vx*=0.976;m.vy*=0.976;
       if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.82;}
       if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.82;}
       if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.82;}
@@ -1237,7 +1229,7 @@ function simulateFullBoardVoid(vx,vy){
         else p2Void+=m.val*0.85;
         sim.splice(i,1);continue;
       }
-      if(Math.hypot(m.vx,m.vy)>0.08)moving=true;
+      if(Math.hypot(m.vx,m.vy)>0.14)moving=true;
       else{m.vx=0;m.vy=0;}
     }
     for(let i=0;i<sim.length;i++){
@@ -1282,31 +1274,31 @@ function aiShootVoid(){
   if(diff==='easy'){
     for(let d=125;d<=235;d+=12)angles.push(d*Math.PI/180);
     targets.forEach(t=>angles.push(Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x)));
-    speeds=[6.2,8.5];jitter=55;releaseErr=0.12;
+    speeds=[6.8,9.2];jitter=55;releaseErr=0.12;
   }else if(diff==='medium'){
     for(let d=115;d<=245;d+=8)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       angles.push(a-0.06,a,a+0.06);
     });
-    speeds=[6.0,8.2,10.8];jitter=22;releaseErr=0.05;
+    speeds=[6.6,9.0,11.6];jitter=22;releaseErr=0.05;
   }else if(diff==='hard_bank'){
     for(let d=30;d<=330;d+=6)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       angles.push(a-0.08,a-0.04,a,a+0.04,a+0.08);
     });
-    speeds=[5.8,8.0,10.5,13.0];jitter=6;releaseErr=0.015;
+    speeds=[6.4,8.8,11.4,14.0];jitter=6;releaseErr=0.015;
   }else{
     for(let d=0;d<360;d+=5)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       [-0.16,-0.1,-0.05,0,0.05,0.1,0.16].forEach(o=>angles.push(a+o));
     });
-    speeds=[5.5,7.2,9.0,10.8,12.5,14.2];jitter=2;releaseErr=0;
+    speeds=[6.2,8.0,10.0,11.8,13.5,15.0];jitter=2;releaseErr=0;
   }
 
-  let bestScore=-Infinity,bestVx=-6.2,bestVy=-3.4;
+  let bestScore=-Infinity,bestVx=-6.8,bestVy=-3.4;
   for(const ang of angles){
     for(const spd of speeds){
       const vx=Math.cos(ang)*spd,vy=Math.sin(ang)*spd;
@@ -1322,7 +1314,7 @@ function aiShootVoid(){
   launchShot(bestVx,bestVy);
 }
 
-// Bumper Pool AI Simulator — actively calculates Bumper Post Caroms & Rail Banks!
+// Bumper Pool AI Simulator — matches heavier felt friction (`0.976`), tight pocket (`13.4`), & sealed guard posts!
 function simulateBumperShot(ballIdx,vx,vy){
   const minX=PLAY_MIN_X+BP_R,maxX=PLAY_MAX_X-BP_R;
   const minY=PLAY_MIN_Y+BP_R,maxY=PLAY_MAX_Y-BP_R;
@@ -1332,7 +1324,6 @@ function simulateBumperShot(ballIdx,vx,vy){
   sim[ballIdx].vx=vx;sim[ballIdx].vy=vy;
 
   const targetPocket=BP_POCKETS[0]; // Left pocket is CPU target
-  const ownPocket=BP_POCKETS[1];    // Right pocket is CPU home pocket
   const hadLeader=sim.some(m=>m.team===1 && m.isLeader && !m.sunk);
 
   let score=0;
@@ -1340,12 +1331,12 @@ function simulateBumperShot(ballIdx,vx,vy){
   let shooterRailHits=0;
   let shooterBlockedEarly=false;
 
-  for(let step=0;step<320;step++){
+  for(let step=0;step<280;step++){
     let moving=false;
     for(const m of sim){
       if(m.sunk)continue;
       m.x+=m.vx;m.y+=m.vy;
-      m.vx*=0.985;m.vy*=0.985;
+      m.vx*=0.976;m.vy*=0.976;
 
       let railHit=false;
       if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;railHit=true;}
@@ -1369,35 +1360,31 @@ function simulateBumperShot(ballIdx,vx,vy){
         }
       }
 
-      // Tight Pocket Cup vs Rim Lip-Out Physics
+      // Extra-Tight Pocket Cup (`13.4px`) vs Rim Lip-Out Physics
       for(const pk of BP_POCKETS){
         const pdx=pk.x-m.x,pdy=pk.y-m.y,pdist=Math.hypot(pdx,pdy);
         const spd=Math.hypot(m.vx,m.vy);
-        if(pdist<BP_POCKET_R*0.56 && spd<10.5){
+        if(pdist<BP_POCKET_R*0.48 && spd<8.8){
           m.sunk=true;
           if(pk===targetPocket){
             if(m.team===1){
               if(hadLeader && !m.isLeader)score-=1100;
-              else{
-                // Huge reward for sinking, plus bonus if banked off a bumper post or cushion!
-                score+=1800 + (shooterBumperHits>0?220:0) + (shooterRailHits>0?120:0);
-              }
+              else score+=1800 + (shooterBumperHits>0?240:0) + (shooterRailHits>0?130:0);
             }else{
-              // Sinking an opponent's ball helps clear blockers near the pocket
               score+=110;
             }
           }else{
-            // Sinking own ball in own pocket is a foul!
             score-=1200;
           }
-        }else if(pdist<BP_POCKET_R+1.2 && pdist>0.1){
+        }else if(pdist<BP_POCKET_R+1.0 && pdist>0.1){
           const nx=pdx/pdist,ny=pdy/pdist;
-          m.vx+=nx*0.38;m.vy+=ny*0.38;
-          if(spd>8.2){m.vx+=-ny*0.76;m.vy+=nx*0.76;}
+          m.vx+=nx*0.34;m.vy+=ny*0.34;
+          if(spd>7.2){m.vx+=-ny*0.82;m.vy+=nx*0.82;}
         }
       }
 
-      if(!m.sunk && Math.hypot(m.vx,m.vy)>0.08)moving=true;
+      if(!m.sunk && Math.hypot(m.vx,m.vy)>0.14)moving=true;
+      else{m.vx=0;m.vy=0;}
     }
 
     for(let i=0;i<sim.length;i++){
@@ -1418,21 +1405,18 @@ function simulateBumperShot(ballIdx,vx,vy){
     if(!moving)break;
   }
 
-  // Evaluate final board position: reward parking close to Left Pocket & using bumpers to get around blockers!
   const shooter=sim[ballIdx];
   if(!shooter.sunk){
     const dist=Math.hypot(shooter.x-targetPocket.x,shooter.y-targetPocket.y);
     score+=(680-dist)*1.15;
-    // Extra positioning bonus if the ball is on the left half of the table near the pocket mouth
-    if(shooter.x < targetPocket.x + 115 && Math.abs(shooter.y - targetPocket.y) < 75){
-      score+=180;
+    if(shooter.x > targetPocket.x + 18 && shooter.x < targetPocket.x + 125 && Math.abs(shooter.y - targetPocket.y) < 65){
+      score+=190;
     }
-    // Reward clean bumper-carom positioning that bypasses central blockers
-    if(shooterBumperHits>0 && !shooterBlockedEarly)score+=75;
+    if(shooterBumperHits>0 && !shooterBlockedEarly)score+=85;
     if(shooterBlockedEarly)score-=140;
   }
 
-  return {score,usedBumper:(shooterBumperHits>0),usedRail:(shooterRailHits>0)};
+  return {score,usedBumper:(shooterBumperHits>0)};
 }
 
 function aiShootBumperPool(){
@@ -1453,7 +1437,7 @@ function aiShootBumperPool(){
     const baseAng=Math.atan2(targetPocket.y-b.y,targetPocket.x-b.x);
     [-0.18,-0.09,-0.04,0,0.04,0.09,0.18].forEach(o=>angleSet.add(baseAng+o));
 
-    // 2. Targeted Bumper-Post Carom Angles (aiming at the grazing edges of every bumper post!)
+    // 2. Targeted Bumper-Post Carom Angles
     for(const bp of BP_BUMPERS){
       const dx=bp.x-b.x,dy=bp.y-b.y,d=Math.hypot(dx,dy);
       if(d>BP_R+BP_POST_R+2){
@@ -1465,7 +1449,7 @@ function aiShootBumperPool(){
       }
     }
 
-    // 3. Top & Bottom Cushion Mirror-Bank Angles into the Left Pocket
+    // 3. Top & Bottom Cushion Mirror-Bank Angles into Left Pocket
     const topMirrorY=2*(PLAY_MIN_Y+BP_R)-targetPocket.y;
     const botMirrorY=2*(PLAY_MAX_Y-BP_R)-targetPocket.y;
     [topMirrorY,botMirrorY].forEach(my=>{
@@ -1473,10 +1457,10 @@ function aiShootBumperPool(){
       [-0.08,-0.04,0,0.04,0.08].forEach(o=>angleSet.add(bankAng+o));
     });
 
-    // 4. Full 360-degree sweep so backward/side-rail bumper banks are never missed
+    // 4. Full 360-degree sweep
     for(let d=0;d<360;d+=6)angleSet.add(d*Math.PI/180);
 
-    const speeds=[6.4,8.6,10.6,12.8];
+    const speeds=[7.0,9.4,11.8,14.2];
 
     for(const ang of angleSet){
       for(const spd of speeds){
@@ -1633,7 +1617,8 @@ function stepPhysics(){
     const m=marbles[i];
     if(m.sunk)continue;
     m.x+=m.vx;m.y+=m.vy;
-    m.vx*=0.985;m.vy*=0.985;
+    // Realistic wool-cloth felt rolling resistance (0.976 per frame)
+    m.vx*=0.976;m.vy*=0.976;
 
     let bounced=false;
     if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;bounced=true;}
@@ -1689,13 +1674,13 @@ function stepPhysics(){
         }
       }
 
-      // Tight Bumper Pool Pockets (`BP_POCKET_R = 14.8`) with Rim Lip-Out Physics!
+      // Extra-Tight Bumper Pool Pockets (`BP_POCKET_R = 13.4`) with Rim Lip-Out Physics!
       for(const pk of BP_POCKETS){
         const pdx=pk.x-m.x,pdy=pk.y-m.y;
         const pdist=Math.hypot(pdx,pdy);
         const spd=Math.hypot(m.vx,m.vy);
 
-        if(pdist<BP_POCKET_R*0.56 && spd<10.5){
+        if(pdist<BP_POCKET_R*0.48 && spd<8.8){
           shakeTime=10;shakeMag=4;
           spawnParticles(pk.x,pk.y,pk.color,20);
           m.sunk=true;m.vx=0;m.vy=0;
@@ -1738,19 +1723,19 @@ function stepPhysics(){
           }
           updateHUD();
           break;
-        }else if(pdist<BP_POCKET_R+1.2 && pdist>0.1){
+        }else if(pdist<BP_POCKET_R+1.0 && pdist>0.1){
           const nx=pdx/pdist,ny=pdy/pdist;
-          m.vx+=nx*0.38;
-          m.vy+=ny*0.38;
-          if(spd>8.2){
-            m.vx+=-ny*0.76;
-            m.vy+=nx*0.76;
+          m.vx+=nx*0.34;
+          m.vy+=ny*0.34;
+          if(spd>7.2){
+            m.vx+=-ny*0.82;
+            m.vy+=nx*0.82;
           }
         }
       }
     }
 
-    if(!m.sunk && Math.hypot(m.vx,m.vy)>0.08)anyMoving=true;
+    if(!m.sunk && Math.hypot(m.vx,m.vy)>0.14)anyMoving=true;
     else{m.vx=0;m.vy=0;}
   }
 
@@ -2117,14 +2102,14 @@ function drawTable(theme){
     ctx.fillStyle='rgba(255,255,255,0.45)';
     ctx.beginPath();ctx.arc(cx,cy,4.5,0,Math.PI*2);ctx.fill();
 
-    // Tight Goal Pockets (`BP_POCKET_R = 14.8` — barely wider than a 14px ball)
+    // Extra-Tight Goal Pockets (`BP_POCKET_R = 13.4` — snugger than a 14px ball)
     BP_POCKETS.forEach(pk=>{
       ctx.fillStyle='rgba(0,0,0,0.5)';
-      ctx.beginPath();ctx.arc(pk.x,pk.y+1.2,BP_POCKET_R+3,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(pk.x,pk.y+1.2,BP_POCKET_R+2.5,0,Math.PI*2);ctx.fill();
 
       ctx.strokeStyle=pk.color;
-      ctx.lineWidth=2.5;
-      ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R+1.2,0,Math.PI*2);ctx.stroke();
+      ctx.lineWidth=2.2;
+      ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R+1,0,Math.PI*2);ctx.stroke();
 
       ctx.fillStyle='#030108';
       ctx.beginPath();ctx.arc(pk.x,pk.y,BP_POCKET_R,0,Math.PI*2);ctx.fill();
