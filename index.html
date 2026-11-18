@@ -304,7 +304,7 @@ footer a{color:var(--cyan);text-decoration:none}
     <button class="alt" onclick="showTitle()">&#8962; Menu</button>
     <button onclick="resetMatch(true)">&#8635; New Match</button>
     <button class="alt" onclick="toggleGameRuleMode()" id="quickModeBtn">&#8644; Mode: Void Edge</button>
-    <button class="alt" onclick="toggleVoidRollSpeed()" id="voidSpeedBtn" title="Toggle marble rolling speed in Void Edge 3.0">&#9201; Roll: Fast</button>
+    <button class="alt" onclick="toggleBallRollSpeed()" id="rollSpeedBtn" title="Toggle ball rolling speed in both modes">&#9201; Roll: Fast</button>
     <button class="alt" onclick="openChroniclesModal()" id="rivalBtn">Rival: Architect</button>
     <button class="alt" onclick="cycleJukebox()" id="musicBtn">&#9835; Jukebox: OFF</button>
     <button class="alt" onclick="toggleLog()" id="logBtn">&#128220; Log</button>
@@ -373,8 +373,8 @@ footer a{color:var(--cyan);text-decoration:none}
       </div>
       <div style="background:#190c33;padding:.65rem;border-radius:8px;border-left:3px solid var(--gold)">
         <strong style="color:var(--gold);font-size:.9rem">MODE B: OFFICIAL BUMPER POOL RULES</strong><br>
-        &bull; <b>Simultaneous Opening Bank Break:</b> Both players bank their marked cue ball off a side rail toward their target pocket on the count of 3. Whoever sinks their ball—or stops closest to their target pocket—keeps the board as-is and shoots next with their next ball in line!<br>
-        &bull; <b>Tie Shootout (Both Sink Simultaneously):</b> If both players sink their ball at the same time on the count of 3, each spots their next ball in line (starting to the right of the opponent's goal) and shoots simultaneously on 3 again until one misses!<br>
+        &bull; <b>Simultaneous Opening Bank Break:</b> On the count of 3, both players bank off the top side rail (to the player's left and the CPU's right) toward their target cup. The CPU's planned bank line is shown on the table during the countdown.<br>
+        &bull; <b>Tie Shootout (Both Sink Simultaneously):</b> If both players sink their ball at the same time on 3, each spots their next ball in line (starting to the right of the opponent's goal) and shoots on 3 again!<br>
         &bull; <b>Bumper Caroms &amp; Penalties:</b> Use the 12 rubber bumper posts and rails to bank around blockers. Sinking another ball before your marked ball, or dropping your own ball in the wrong cup, awards your opponent 2 free pocketed balls!
       </div>
     </div>
@@ -395,17 +395,13 @@ let PLAY_MIN_Y=APRON+RAIL,PLAY_MAX_Y=H-APRON-RAIL;
 
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
-// Mode-Specific Rolling Friction Helpers
-// - Bumper Pool always uses 0.9805 damping / 0.11 stop threshold
-// - Void Edge defaults to Fast (0.985 / 0.08) and toggles to Slow (0.9805 / 0.11)
-let voidSlowRoll=false;
+// Universal Ball Speed Toggle (works in both Void Edge 3.0 and Bumper Pool)
+let slowRollMode=false;
 function getFeltDamping(){
-  if(gameType==='void')return voidSlowRoll?0.9805:0.985;
-  return 0.9805;
+  return slowRollMode?0.9805:0.985;
 }
 function getStopSpeed(){
-  if(gameType==='void')return voidSlowRoll?0.11:0.08;
-  return 0.11;
+  return slowRollMode?0.11:0.08;
 }
 
 // Bumper Pool Geometry:
@@ -540,6 +536,7 @@ let shotLogs=[];
 let selectedBall=null;
 let bpLagTimer=null,bpLagCountdown=0,bpLagBalls=[null,null];
 let bpLagShots=[null,null];
+let bpLagPreview=null;
 let bpLagTurn=0;
 let bpLagRound=0;
 let bpScoredOwnThisTurn=false;
@@ -551,12 +548,23 @@ let replayFrames=[];
 let replayIdx=0;
 let postReplayCallback=null;
 
-// Audio Engine
+// ==========================================
+// EXPANDED JUKEBOX ENGINE (CLASSICAL, BLUES, JAZZ, ROCK)
+// ==========================================
 let audioCtx=null,jukeboxTrack=0,musicTimeout=null;
-const TRACK_NAMES=['OFF','1: Classical Minuet','2: Void Chase','3: Abyss Drift','4: Neon Duel'];
+const TRACK_NAMES=[
+  'OFF',
+  '1: Classical (Bach Minuet in G)',
+  '2: Classical (Ode to Joy)',
+  '3: Blues (12-Bar Shuffle)',
+  '4: Jazz (Autumn Leaves)',
+  '5: Jazz (Take Five 5/4)',
+  '6: Rock (Smoke on the Water)',
+  '7: Rock (Seven Nation Riff)'
+];
 const TRACKS=[
   [],
-  // Track 1: Classical Minuet in G Major
+  // 1. Classical: J.S. Bach - Minuet in G Major (BWV Anh. 114)
   [
     {f:587.33,b:196.00,d:320,w:'triangle',g:0.075},
     {f:392.00,b:246.94,d:160,w:'triangle',g:0.065},
@@ -575,26 +583,64 @@ const TRACKS=[
     {f:392.00,b:246.94,d:320,w:'triangle',g:0.065},
     {f:392.00,b:293.66,d:320,w:'triangle',g:0.065}
   ],
-  // Track 2: Void Chase
+  // 2. Classical: Ludwig van Beethoven - Ode to Joy
   [
-    {f:220.00,d:120,w:'sawtooth',g:0.045},{f:329.63,d:120,w:'sawtooth',g:0.045},
-    {f:440.00,d:120,w:'sawtooth',g:0.045},{f:523.25,d:120,w:'sawtooth',g:0.045},
-    {f:440.00,d:120,w:'sawtooth',g:0.045},{f:329.63,d:120,w:'sawtooth',g:0.045},
-    {f:493.88,d:120,w:'sawtooth',g:0.045},{f:329.63,d:120,w:'sawtooth',g:0.045}
+    {f:659.25,b:261.63,d:260,w:'triangle',g:0.075},{f:659.25,b:261.63,d:260,w:'triangle',g:0.075},
+    {f:698.46,b:329.63,d:260,w:'triangle',g:0.075},{f:783.99,b:392.00,d:260,w:'triangle',g:0.080},
+    {f:783.99,b:196.00,d:260,w:'triangle',g:0.080},{f:698.46,b:246.94,d:260,w:'triangle',g:0.075},
+    {f:659.25,b:293.66,d:260,w:'triangle',g:0.075},{f:587.33,b:196.00,d:260,w:'triangle',g:0.075},
+    {f:523.25,b:261.63,d:260,w:'triangle',g:0.075},{f:523.25,b:329.63,d:260,w:'triangle',g:0.075},
+    {f:587.33,b:392.00,d:260,w:'triangle',g:0.075},{f:659.25,b:261.63,d:260,w:'triangle',g:0.075},
+    {f:659.25,b:196.00,d:390,w:'triangle',g:0.080},{f:587.33,b:246.94,d:130,w:'triangle',g:0.070},
+    {f:587.33,b:196.00,d:520,w:'triangle',g:0.075}
   ],
-  // Track 3: Abyss Drift
+  // 3. Blues: 12-Bar Blues Shuffle in A
   [
-    {f:293.66,d:210,w:'triangle',g:0.08},{f:349.23,d:210,w:'triangle',g:0.08},
-    {f:440.00,d:210,w:'triangle',g:0.08},{f:523.25,d:210,w:'triangle',g:0.08},
-    {f:493.88,d:210,w:'triangle',g:0.08},{f:440.00,d:210,w:'triangle',g:0.08},
-    {f:349.23,d:210,w:'triangle',g:0.08},{f:329.63,d:210,w:'triangle',g:0.08}
+    {f:440.00,b:110.00,d:280,w:'triangle',g:0.075},{f:523.25,b:138.59,d:140,w:'triangle',g:0.070},
+    {f:587.33,b:164.81,d:280,w:'triangle',g:0.075},{f:622.25,b:185.00,d:140,w:'triangle',g:0.080},
+    {f:587.33,b:164.81,d:280,w:'triangle',g:0.075},{f:523.25,b:138.59,d:140,w:'triangle',g:0.070},
+    {f:440.00,b:110.00,d:420,w:'triangle',g:0.080},
+    {f:587.33,b:146.83,d:280,w:'triangle',g:0.075},{f:698.46,b:185.00,d:140,w:'triangle',g:0.070},
+    {f:783.99,b:220.00,d:280,w:'triangle',g:0.080},{f:830.61,b:246.94,d:140,w:'triangle',g:0.085},
+    {f:783.99,b:220.00,d:280,w:'triangle',g:0.080},{f:698.46,b:185.00,d:140,w:'triangle',g:0.070},
+    {f:587.33,b:146.83,d:420,w:'triangle',g:0.075},
+    {f:659.25,b:164.81,d:280,w:'triangle',g:0.080},{f:587.33,b:146.83,d:280,w:'triangle',g:0.075},
+    {f:523.25,b:130.81,d:280,w:'triangle',g:0.075},{f:440.00,b:110.00,d:420,w:'triangle',g:0.085}
   ],
-  // Track 4: Neon Duel
+  // 4. Jazz: Autumn Leaves (ii-V-I-IV in G minor / Bb major)
   [
-    {f:196.00,d:140,w:'sawtooth',g:0.045},{f:293.66,d:140,w:'sawtooth',g:0.045},
-    {f:392.00,d:140,w:'sawtooth',g:0.045},{f:466.16,d:140,w:'sawtooth',g:0.045},
-    {f:392.00,d:140,w:'sawtooth',g:0.045},{f:293.66,d:140,w:'sawtooth',g:0.045},
-    {f:349.23,d:140,w:'sawtooth',g:0.045},{f:293.66,d:140,w:'sawtooth',g:0.045}
+    {f:392.00,b:130.81,d:240,w:'sine',g:0.095},{f:440.00,b:146.83,d:240,w:'sine',g:0.095},
+    {f:466.16,b:164.81,d:240,w:'sine',g:0.095},{f:622.25,b:174.61,d:720,w:'sine',g:0.105},
+    {f:349.23,b:174.61,d:240,w:'sine',g:0.095},{f:392.00,b:196.00,d:240,w:'sine',g:0.095},
+    {f:440.00,b:220.00,d:240,w:'sine',g:0.095},{f:587.33,b:233.08,d:720,w:'sine',g:0.105},
+    {f:311.13,b:155.56,d:240,w:'sine',g:0.095},{f:349.23,b:174.61,d:240,w:'sine',g:0.095},
+    {f:392.00,b:196.00,d:240,w:'sine',g:0.095},{f:523.25,b:130.81,d:720,w:'sine',g:0.105},
+    {f:293.66,b:146.83,d:240,w:'sine',g:0.095},{f:369.99,b:185.00,d:240,w:'sine',g:0.095},
+    {f:440.00,b:220.00,d:240,w:'sine',g:0.095},{f:466.16,b:196.00,d:720,w:'sine',g:0.105}
+  ],
+  // 5. Jazz: Dave Brubeck - Take Five (5/4 Time Signature Groove)
+  [
+    {f:466.16,b:155.56,d:190,w:'sine',g:0.095},{f:622.25,b:155.56,d:190,w:'sine',g:0.095},
+    {f:698.46,b:233.08,d:190,w:'sine',g:0.095},{f:739.99,b:233.08,d:190,w:'sine',g:0.100},
+    {f:783.99,b:233.08,d:380,w:'sine',g:0.105},{f:698.46,b:233.08,d:190,w:'sine',g:0.095},
+    {f:622.25,b:155.56,d:380,w:'sine',g:0.095},{f:523.25,b:233.08,d:190,w:'sine',g:0.095},
+    {f:466.16,b:233.08,d:380,w:'sine',g:0.095},{f:349.23,b:233.08,d:380,w:'sine',g:0.090}
+  ],
+  // 6. Rock: Deep Purple - Smoke on the Water Riff
+  [
+    {f:196.00,b:98.00,d:240,w:'sawtooth',g:0.055},{f:233.08,b:116.54,d:240,w:'sawtooth',g:0.055},
+    {f:261.63,b:130.81,d:360,w:'sawtooth',g:0.060},{f:196.00,b:98.00,d:240,w:'sawtooth',g:0.055},
+    {f:233.08,b:116.54,d:240,w:'sawtooth',g:0.055},{f:277.18,b:138.59,d:130,w:'sawtooth',g:0.060},
+    {f:261.63,b:130.81,d:460,w:'sawtooth',g:0.060},{f:196.00,b:98.00,d:240,w:'sawtooth',g:0.055},
+    {f:233.08,b:116.54,d:240,w:'sawtooth',g:0.055},{f:261.63,b:130.81,d:360,w:'sawtooth',g:0.060},
+    {f:233.08,b:116.54,d:240,w:'sawtooth',g:0.055},{f:196.00,b:98.00,d:520,w:'sawtooth',g:0.060}
+  ],
+  // 7. Rock: The White Stripes - Seven Nation Army Riff
+  [
+    {f:329.63,b:164.81,d:360,w:'sawtooth',g:0.055},{f:329.63,b:164.81,d:130,w:'sawtooth',g:0.055},
+    {f:392.00,b:196.00,d:240,w:'sawtooth',g:0.055},{f:329.63,b:164.81,d:240,w:'sawtooth',g:0.055},
+    {f:293.66,b:146.83,d:240,w:'sawtooth',g:0.055},{f:261.63,b:130.81,d:480,w:'sawtooth',g:0.060},
+    {f:246.94,b:123.47,d:480,w:'sawtooth',g:0.060}
   ]
 ];
 
@@ -702,13 +748,12 @@ function stepJukebox(i){
       g.gain.exponentialRampToValueAtTime(0.001,now+dur*0.92);
       o.start(now);o.stop(now+dur);
 
-      if(note.b || jukeboxTrack===3){
-        const bassFreq=note.b || note.f*0.5;
+      if(note.b){
         const o2=c.createOscillator(),g2=c.createGain();
-        o2.type='sine';
+        o2.type=(jukeboxTrack>=6)?'triangle':'sine';
         o2.connect(g2);g2.connect(c.destination);
-        o2.frequency.setValueAtTime(bassFreq,now);
-        g2.gain.setValueAtTime(0.055,now);
+        o2.frequency.setValueAtTime(note.b,now);
+        g2.gain.setValueAtTime(0.065,now);
         g2.gain.exponentialRampToValueAtTime(0.001,now+dur*0.95);
         o2.start(now);o2.stop(now+dur);
       }
@@ -717,12 +762,13 @@ function stepJukebox(i){
   musicTimeout=setTimeout(()=>stepJukebox(i+1),note.d);
 }
 
-// Mode, Ball Speed & Series Switching
-function toggleVoidRollSpeed(){
-  voidSlowRoll=!voidSlowRoll;
-  const btn=document.getElementById('voidSpeedBtn');
-  btn.textContent=voidSlowRoll?'⏱ Roll: Slow':'⏱ Roll: Fast';
-  setReferee(`Void Edge rolling speed set to ${voidSlowRoll?'SLOW (High-Control Cloth)':'FAST (Classic Arena)'}.`);
+// Universal Ball Speed & Mode Switching
+function toggleBallRollSpeed(){
+  slowRollMode=!slowRollMode;
+  const btn=document.getElementById('rollSpeedBtn');
+  btn.textContent=slowRollMode?'⏱ Roll: Slow':'⏱ Roll: Fast';
+  const modeLabel=gameType==='void'?'Void Edge 3.0':'Bumper Pool';
+  setReferee(`${modeLabel} rolling speed set to ${slowRollMode?'SLOW (High-Control Cloth)':'FAST (Classic Arena)'}.`);
 }
 
 function setGameType(type){
@@ -733,7 +779,6 @@ function setGameType(type){
   document.getElementById('btnModeBumper').classList.toggle('active',!isVoid);
   document.getElementById('headerModeText').textContent=isVoid?'Void Edge 3.0':'Bumper Pool';
   document.getElementById('quickModeBtn').textContent=isVoid?'⇄ Mode: Void Edge':'⇄ Mode: Bumper Pool';
-  document.getElementById('voidSpeedBtn').style.display=isVoid?'inline-block':'none';
   document.getElementById('mainHeaderTitle').textContent=isVoid?'VOID EDGE CHRONICLES 3.0':'BUMPER POOL: VOID EDITION';
   document.getElementById('overlayLogo').textContent=isVoid?'VOID EDGE 3.0':'BUMPER POOL';
   document.getElementById('overlayTag').textContent=isVoid
@@ -870,7 +915,7 @@ function resetMatch(newSeries=true){
   document.getElementById('titleOverlay').classList.add('hidden');
   document.getElementById('voidCamBadge').classList.add('hidden');
   marbles=[];particles=[];scores=[0,0];moveIdx=0;suddenDeath=false;
-  aiming=false;isReplaying=false;selectedBall=null;
+  aiming=false;isReplaying=false;selectedBall=null;bpLagPreview=null;
 
   if(gameType==='void'){
     phase='coin';
@@ -949,7 +994,7 @@ function startVoidTurn(){
 }
 
 // ==========================================
-// MODE B: OFFICIAL BUMPER POOL + SIMULTANEOUS 3-2-1 BANK BREAK & TIE-BREAKER
+// MODE B: OFFICIAL BUMPER POOL + SIMULTANEOUS 3-2-1 BANK BREAK
 // ==========================================
 function setupBumperPoolBalls(){
   marbles=[];
@@ -988,13 +1033,23 @@ function getNextInLineBall(team){
   return unsunk[0]||null;
 }
 
+// CPU stands on the right facing left -> its right side is the TOP rail (`PLAY_MIN_Y + BP_R`)
 function computeCpuLagShot(ball){
   const leftPocket=BP_POCKETS[0];
-  const railY=(Math.random()<0.5)?(PLAY_MIN_Y+BP_R):(PLAY_MAX_Y-BP_R);
-  const bankX=leftPocket.x + 24 + (Math.random()*24-12);
+  const railY=PLAY_MIN_Y+BP_R; // CPU's right-hand rail
+  const bankX=leftPocket.x + 28 + (Math.random()*16-8);
   const ang=Math.atan2(railY-ball.y,bankX-ball.x);
-  const spd=10.4 + (Math.random()*1.2);
-  return {vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd};
+  const spd=(slowRollMode?10.6:8.9) + (Math.random()*0.9);
+  return {
+    vx:Math.cos(ang)*spd,
+    vy:Math.sin(ang)*spd,
+    startX:ball.x,
+    startY:ball.y,
+    bankX,
+    bankY:railY,
+    targetX:leftPocket.x,
+    targetY:leftPocket.y
+  };
 }
 
 function startBumperPoolMatch(){
@@ -1018,10 +1073,13 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
 
   bpLagBalls=[p1Ball,p2Ball];
   bpLagShots=[null,null];
+  bpLagPreview=null;
   bpLagTurn=0;
 
   if(vsAI){
-    bpLagShots[1]=computeCpuLagShot(p2Ball);
+    const cpuPlan=computeCpuLagShot(p2Ball);
+    bpLagShots[1]={vx:cpuPlan.vx,vy:cpuPlan.vy};
+    bpLagPreview=cpuPlan;
     selectedBall=p1Ball;
     shooterPos={x:p1Ball.x,y:p1Ball.y};
     activeTeam=0;
@@ -1030,8 +1088,8 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
     updateHUD();
 
     const label=isTieBreaker
-      ?'BOTH SANK! Next ball spotted — bank shot on 3!'
-      :'OPENING BANK BREAK (3-2-1): Bank off side rail toward Right Pocket!';
+      ?'BOTH SANK! Bank off top rail on 3!'
+      :'OPENING BANK BREAK (3-2-1): Bank off top rail (your left) — CPU banks to its right!';
     setReferee(`${label} (${bpLagCountdown}s)`);
     addLog(isTieBreaker?'Tie-breaker simultaneous bank shot initiated!':'Opening simultaneous bank break started!');
     playSFX('beep',1);
@@ -1039,19 +1097,24 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
     bpLagTimer=setInterval(()=>{
       bpLagCountdown--;
       if(bpLagCountdown>0){
-        setReferee(`SHOOT ON 3 (${bpLagCountdown}s): Aim & release your bank shot toward the Right Pocket!`);
+        setReferee(`SHOOT ON 3 (${bpLagCountdown}s): Bank off top rail (your left) — CPU outline shows its right-rail bank!`);
         playSFX('beep',1);
       }else{
         clearInterval(bpLagTimer);bpLagTimer=null;
         if(!bpLagShots[0]){
+          // Default player bank off top rail (player's left) toward right pocket
+          const topRailY=PLAY_MIN_Y+BP_R;
+          const bankX=BP_POCKETS[1].x-28;
+          const defaultAng=Math.atan2(topRailY-shooterPos.y,bankX-shooterPos.x);
+          const defaultSpd=slowRollMode?10.6:8.9;
           if(aiming){
             aiming=false;updatePowerUI(0);
             const dx=aimPos.x-shooterPos.x,dy=aimPos.y-shooterPos.y,dist=Math.hypot(dx,dy);
-            const pwr=dist>=15?Math.min(15,dist/18):10.4;
-            const ang=dist>=15?Math.atan2(dy,dx):-0.26;
+            const pwr=dist>=15?Math.min(15,dist/18):defaultSpd;
+            const ang=dist>=15?Math.atan2(dy,dx):defaultAng;
             bpLagShots[0]={vx:Math.cos(ang)*pwr,vy:Math.sin(ang)*pwr};
           }else{
-            bpLagShots[0]={vx:Math.cos(-0.26)*10.4,vy:Math.sin(-0.26)*10.4};
+            bpLagShots[0]={vx:Math.cos(defaultAng)*defaultSpd,vy:Math.sin(defaultAng)*defaultSpd};
           }
         }
         fireSimultaneousLagShots();
@@ -1064,14 +1127,15 @@ function startBumperPoolSimultaneousRound(isTieBreaker){
     phase='bp_lag_aim';
     updateHUD();
     setReferee(isTieBreaker
-      ?'BOTH SANK! Home Red (Left), aim next spotted ball for simultaneous count-of-3 shot!'
-      :'2P BANK BREAK: Home Red (Left), aim & lock your bank shot first!');
+      ?'BOTH SANK! Home Red (Left), bank off top rail (your left)!'
+      :'2P BANK BREAK: Home Red (Left), aim your left-side (top rail) bank shot first!');
   }
 }
 
 function fireSimultaneousLagShots(){
   phase='bp_lag_moving';
   aiming=false;
+  bpLagPreview=null;
   updatePowerUI(0);
   setReferee('3... 2... 1... SHOOT! Both bank shots released simultaneously!');
   playSFX('beep',2);
@@ -1189,7 +1253,7 @@ function updateHUD(){
     document.getElementById('r2').textContent=`Balls Left: ${p2Left} / 5`;
     if(phase==='bp_lag_aim'||phase==='bp_lag_moving'){
       document.getElementById('turnInfo').textContent=bpLagRound>0?'TIE BREAK 3-2-1':'BANK BREAK 3-2-1';
-      document.getElementById('nextMarble').textContent='Sink or Closest to Goal Goes Next';
+      document.getElementById('nextMarble').textContent='Bank Left / CPU Banks Right';
     }else{
       const myLeader=marbles.some(m=>m.team===activeTeam && m.isLeader && !m.sunk);
       document.getElementById('turnInfo').textContent=activeTeam===0?'HOME RED TURN':'AWAY WHITE TURN';
@@ -1288,7 +1352,7 @@ function aiShootVoid(){
   if(phase!=='aim'||!vsAI||activeTeam!==1)return;
   const targets=marbles.filter(m=>m.team===0);
   const diff=selectedRival.diff;
-  const spdBoost=voidSlowRoll?0.5:0;
+  const spdBoost=slowRollMode?0.5:0;
 
   let angles=[],speeds=[],jitter=4,releaseErr=0;
   if(diff==='easy'){
@@ -1334,7 +1398,7 @@ function aiShootVoid(){
   launchShot(bestVx,bestVy);
 }
 
-// Bumper Pool AI Simulator — synchronized with Bumper Pool's `0.9805` damping & tight pocket (`13.4`)
+// Bumper Pool AI Simulator — synchronized with universal `getFeltDamping()` & `getStopSpeed()`
 function simulateBumperShot(ballIdx,vx,vy){
   const minX=PLAY_MIN_X+BP_R,maxX=PLAY_MAX_X-BP_R;
   const minY=PLAY_MIN_Y+BP_R,maxY=PLAY_MAX_Y-BP_R;
@@ -1450,6 +1514,7 @@ function aiShootBumperPool(){
 
   const targetPocket=BP_POCKETS[0];
   let bestScore=-Infinity,bestBall=candidates[0],bestVx=-7,bestVy=0,bestUsedBumper=false;
+  const spdAdjust=slowRollMode?0:-0.8;
 
   for(const b of candidates){
     const idx=marbles.indexOf(b);
@@ -1478,7 +1543,7 @@ function aiShootBumperPool(){
 
     for(let d=0;d<360;d+=6)angleSet.add(d*Math.PI/180);
 
-    const speeds=[6.7,9.0,11.2,13.5];
+    const speeds=[6.7+spdAdjust,9.0+spdAdjust,11.2+spdAdjust,13.5+spdAdjust];
 
     for(const ang of angleSet){
       for(const spd of speeds){
@@ -1578,7 +1643,7 @@ window.addEventListener('pointerup',()=>{
         selectedBall=bpLagBalls[1];
         shooterPos={x:selectedBall.x,y:selectedBall.y};
         updateHUD();
-        setReferee('2P BANK BREAK: Away White (Right), aim & release your bank shot!');
+        setReferee('2P BANK BREAK: Away White (Right), bank off the top rail (your right)!');
       }else{
         fireSimultaneousLagShots();
       }
@@ -1666,9 +1731,6 @@ function stepPhysics(){
           const msg=`VOID DROP! ${victimTeam}'s ${m.spec.name} falls into the pit (+${m.val} pts to ${scorer})!`;
           setReferee(msg);addLog(msg);
 
-          // Sound rule:
-          // - vs CPU: happy chime when Player (team 0) knocks CPU (team 1) in; sad/penalty sound when CPU scores on Player
-          // - 2-Player Local: sad/penalty sound on any void fall (winner gets happy fanfare at game end)
           if(vsAI && m.team===1){
             playSFX('score',1);
           }else{
@@ -1858,7 +1920,6 @@ function finishGame(winnerTeam){
   phase='over';
   const p1Won=(seriesWins[0]>=neededToWin);
   if(!vsAI){
-    // 2-Player Local: Winner always receives the happy victory fanfare
     playSFX('win');
     saveData.shards+=15;
     persist();
@@ -2245,6 +2306,32 @@ function draw(){
 
   const rad=gameType==='void'?R:BP_R;
 
+  // CPU Opening Bank Shot Outline during 3-Second Countdown
+  if(phase==='bp_lag_aim' && vsAI && bpLagPreview && !isReplaying){
+    const p=bpLagPreview;
+    ctx.save();
+    ctx.strokeStyle='rgba(250,204,21,0.72)';
+    ctx.lineWidth=2.2;
+    ctx.setLineDash([7,6]);
+    ctx.beginPath();
+    ctx.moveTo(p.startX,p.startY);
+    ctx.lineTo(p.bankX,p.bankY);
+    ctx.lineTo(p.targetX,p.targetY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Bank cushion impact ring & target ghost ring
+    ctx.strokeStyle='#facc15';
+    ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.arc(p.bankX,p.bankY,BP_R,0,Math.PI*2);ctx.stroke();
+
+    ctx.fillStyle='rgba(250,204,21,0.92)';
+    ctx.font='800 11px system-ui,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('CPU BANK (RIGHT RAIL)',p.bankX,p.bankY+BP_R+13);
+    ctx.restore();
+  }
+
   if((phase==='aim' || phase==='bp_lag_aim') && !isReplaying){
     const teamColor=activeTeam===0?'#22d3ee':'#facc15';
     const pulse=(rad+4)+Math.sin(Date.now()/170)*2.5;
@@ -2285,12 +2372,12 @@ function draw(){
 
   if(phase==='bp_lag_aim' && vsAI){
     ctx.fillStyle='rgba(6,3,14,0.84)';
-    ctx.beginPath();ctx.roundRect(W/2-125,PLAY_MIN_Y+10,250,36,999);ctx.fill();
+    ctx.beginPath();ctx.roundRect(W/2-125,PLAY_MIN_Y+24,250,34,999);ctx.fill();
     ctx.strokeStyle='#facc15';ctx.lineWidth=2;ctx.stroke();
     ctx.fillStyle='#facc15';
-    ctx.font='900 16px system-ui,sans-serif';
+    ctx.font='900 15px system-ui,sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(`SHOOT ON 3: ${bpLagCountdown>0?bpLagCountdown:'FIRE!'}`,W/2,PLAY_MIN_Y+28);
+    ctx.fillText(`SHOOT ON 3: ${bpLagCountdown>0?bpLagCountdown:'FIRE!'}`,W/2,PLAY_MIN_Y+41);
   }
 
   for(let i=particles.length-1;i>=0;i--){
