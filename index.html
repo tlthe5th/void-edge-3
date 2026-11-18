@@ -304,6 +304,7 @@ footer a{color:var(--cyan);text-decoration:none}
     <button class="alt" onclick="showTitle()">&#8962; Menu</button>
     <button onclick="resetMatch(true)">&#8635; New Match</button>
     <button class="alt" onclick="toggleGameRuleMode()" id="quickModeBtn">&#8644; Mode: Void Edge</button>
+    <button class="alt" onclick="toggleVoidRollSpeed()" id="voidSpeedBtn" title="Toggle marble rolling speed in Void Edge 3.0">&#9201; Roll: Fast</button>
     <button class="alt" onclick="openChroniclesModal()" id="rivalBtn">Rival: Architect</button>
     <button class="alt" onclick="cycleJukebox()" id="musicBtn">&#9835; Jukebox: OFF</button>
     <button class="alt" onclick="toggleLog()" id="logBtn">&#128220; Log</button>
@@ -394,14 +395,20 @@ let PLAY_MIN_Y=APRON+RAIL,PLAY_MAX_Y=H-APRON-RAIL;
 
 const SLOPE_HALF=132,HOLE_HALF=50,VOID_R=19,R=17;
 
-// Balanced Rolling Friction (exact midpoint between 0.985 and 0.976)
-const FELT_DAMPING=0.9805;
-const STOP_SPEED=0.11;
+// Mode-Specific Rolling Friction Helpers
+// - Bumper Pool always uses 0.9805 damping / 0.11 stop threshold
+// - Void Edge defaults to Fast (0.985 / 0.08) and toggles to Slow (0.9805 / 0.11)
+let voidSlowRoll=false;
+function getFeltDamping(){
+  if(gameType==='void')return voidSlowRoll?0.9805:0.985;
+  return 0.9805;
+}
+function getStopSpeed(){
+  if(gameType==='void')return voidSlowRoll?0.11:0.08;
+  return 0.11;
+}
 
 // Bumper Pool Geometry:
-// - BP_R = 14px ball radius (28px diameter)
-// - BP_POCKET_R = 13.4px cup radius (tighter than the ball, requires clean controlled entry!)
-// - Guard posts placed 25px from end rails so no 28px ball can ever squeeze behind the goal!
 const BP_R=14,BP_POCKET_R=13.4,BP_POST_R=12.5;
 let BP_POCKETS=[];
 let BP_BUMPERS=[];
@@ -710,7 +717,14 @@ function stepJukebox(i){
   musicTimeout=setTimeout(()=>stepJukebox(i+1),note.d);
 }
 
-// Mode & Series Switching
+// Mode, Ball Speed & Series Switching
+function toggleVoidRollSpeed(){
+  voidSlowRoll=!voidSlowRoll;
+  const btn=document.getElementById('voidSpeedBtn');
+  btn.textContent=voidSlowRoll?'⏱ Roll: Slow':'⏱ Roll: Fast';
+  setReferee(`Void Edge rolling speed set to ${voidSlowRoll?'SLOW (High-Control Cloth)':'FAST (Classic Arena)'}.`);
+}
+
 function setGameType(type){
   gameType=type;
   syncTableDimensions();
@@ -719,6 +733,7 @@ function setGameType(type){
   document.getElementById('btnModeBumper').classList.toggle('active',!isVoid);
   document.getElementById('headerModeText').textContent=isVoid?'Void Edge 3.0':'Bumper Pool';
   document.getElementById('quickModeBtn').textContent=isVoid?'⇄ Mode: Void Edge':'⇄ Mode: Bumper Pool';
+  document.getElementById('voidSpeedBtn').style.display=isVoid?'inline-block':'none';
   document.getElementById('mainHeaderTitle').textContent=isVoid?'VOID EDGE CHRONICLES 3.0':'BUMPER POOL: VOID EDITION';
   document.getElementById('overlayLogo').textContent=isVoid?'VOID EDGE 3.0':'BUMPER POOL';
   document.getElementById('overlayTag').textContent=isVoid
@@ -1196,6 +1211,8 @@ function simulateFullBoardVoid(vx,vy){
   const cx=W/2,cy=H/2;
   const minX=PLAY_MIN_X+R,maxX=PLAY_MAX_X-R;
   const minY=PLAY_MIN_Y+R,maxY=PLAY_MAX_Y-R;
+  const damping=getFeltDamping();
+  const stopSpd=getStopSpeed();
   const sim=marbles.map(m=>({
     x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,val:m.val,touchedByOpp:m.touchedByOpp,isShot:false
   }));
@@ -1214,7 +1231,7 @@ function simulateFullBoardVoid(vx,vy){
     for(let i=sim.length-1;i>=0;i--){
       const m=sim[i];
       m.x+=m.vx;m.y+=m.vy;
-      m.vx*=FELT_DAMPING;m.vy*=FELT_DAMPING;
+      m.vx*=damping;m.vy*=damping;
       if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.82;}
       if(m.x>maxX){m.x=maxX;m.vx=-Math.abs(m.vx)*0.82;}
       if(m.y<minY){m.y=minY;m.vy=Math.abs(m.vy)*0.82;}
@@ -1231,7 +1248,7 @@ function simulateFullBoardVoid(vx,vy){
         else p2Void+=m.val*0.85;
         sim.splice(i,1);continue;
       }
-      if(Math.hypot(m.vx,m.vy)>STOP_SPEED)moving=true;
+      if(Math.hypot(m.vx,m.vy)>stopSpd)moving=true;
       else{m.vx=0;m.vy=0;}
     }
     for(let i=0;i<sim.length;i++){
@@ -1271,36 +1288,37 @@ function aiShootVoid(){
   if(phase!=='aim'||!vsAI||activeTeam!==1)return;
   const targets=marbles.filter(m=>m.team===0);
   const diff=selectedRival.diff;
+  const spdBoost=voidSlowRoll?0.5:0;
 
   let angles=[],speeds=[],jitter=4,releaseErr=0;
   if(diff==='easy'){
     for(let d=125;d<=235;d+=12)angles.push(d*Math.PI/180);
     targets.forEach(t=>angles.push(Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x)));
-    speeds=[6.5,8.8];jitter=55;releaseErr=0.12;
+    speeds=[6.0+spdBoost,8.4+spdBoost];jitter=55;releaseErr=0.12;
   }else if(diff==='medium'){
     for(let d=115;d<=245;d+=8)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       angles.push(a-0.06,a,a+0.06);
     });
-    speeds=[6.3,8.6,11.2];jitter=22;releaseErr=0.05;
+    speeds=[5.8+spdBoost,8.1+spdBoost,10.7+spdBoost];jitter=22;releaseErr=0.05;
   }else if(diff==='hard_bank'){
     for(let d=30;d<=330;d+=6)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       angles.push(a-0.08,a-0.04,a,a+0.04,a+0.08);
     });
-    speeds=[6.1,8.4,11.0,13.5];jitter=6;releaseErr=0.015;
+    speeds=[5.6+spdBoost,7.9+spdBoost,10.5+spdBoost,13.0+spdBoost];jitter=6;releaseErr=0.015;
   }else{
     for(let d=0;d<360;d+=5)angles.push(d*Math.PI/180);
     targets.forEach(t=>{
       const a=Math.atan2(t.y-shooterPos.y,t.x-shooterPos.x);
       [-0.16,-0.1,-0.05,0,0.05,0.1,0.16].forEach(o=>angles.push(a+o));
     });
-    speeds=[5.8,7.6,9.5,11.4,13.2,14.8];jitter=2;releaseErr=0;
+    speeds=[5.4+spdBoost,7.2+spdBoost,9.0+spdBoost,10.9+spdBoost,12.7+spdBoost,14.4+spdBoost];jitter=2;releaseErr=0;
   }
 
-  let bestScore=-Infinity,bestVx=-6.5,bestVy=-3.4;
+  let bestScore=-Infinity,bestVx=-6.3,bestVy=-3.4;
   for(const ang of angles){
     for(const spd of speeds){
       const vx=Math.cos(ang)*spd,vy=Math.sin(ang)*spd;
@@ -1316,10 +1334,12 @@ function aiShootVoid(){
   launchShot(bestVx,bestVy);
 }
 
-// Bumper Pool AI Simulator — synchronized with balanced `FELT_DAMPING = 0.9805` & tight pocket (`13.4`)
+// Bumper Pool AI Simulator — synchronized with Bumper Pool's `0.9805` damping & tight pocket (`13.4`)
 function simulateBumperShot(ballIdx,vx,vy){
   const minX=PLAY_MIN_X+BP_R,maxX=PLAY_MAX_X-BP_R;
   const minY=PLAY_MIN_Y+BP_R,maxY=PLAY_MAX_Y-BP_R;
+  const damping=getFeltDamping();
+  const stopSpd=getStopSpeed();
   const sim=marbles.map((m,i)=>({
     x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.team,isLeader:m.isLeader,sunk:m.sunk,isShooter:(i===ballIdx)
   }));
@@ -1338,7 +1358,7 @@ function simulateBumperShot(ballIdx,vx,vy){
     for(const m of sim){
       if(m.sunk)continue;
       m.x+=m.vx;m.y+=m.vy;
-      m.vx*=FELT_DAMPING;m.vy*=FELT_DAMPING;
+      m.vx*=damping;m.vy*=damping;
 
       let railHit=false;
       if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;railHit=true;}
@@ -1385,7 +1405,7 @@ function simulateBumperShot(ballIdx,vx,vy){
         }
       }
 
-      if(!m.sunk && Math.hypot(m.vx,m.vy)>STOP_SPEED)moving=true;
+      if(!m.sunk && Math.hypot(m.vx,m.vy)>stopSpd)moving=true;
       else{m.vx=0;m.vy=0;}
     }
 
@@ -1435,11 +1455,9 @@ function aiShootBumperPool(){
     const idx=marbles.indexOf(b);
     const angleSet=new Set();
 
-    // 1. Direct target pocket angles
     const baseAng=Math.atan2(targetPocket.y-b.y,targetPocket.x-b.x);
     [-0.18,-0.09,-0.04,0,0.04,0.09,0.18].forEach(o=>angleSet.add(baseAng+o));
 
-    // 2. Targeted Bumper-Post Carom Angles
     for(const bp of BP_BUMPERS){
       const dx=bp.x-b.x,dy=bp.y-b.y,d=Math.hypot(dx,dy);
       if(d>BP_R+BP_POST_R+2){
@@ -1451,7 +1469,6 @@ function aiShootBumperPool(){
       }
     }
 
-    // 3. Top & Bottom Cushion Mirror-Bank Angles into Left Pocket
     const topMirrorY=2*(PLAY_MIN_Y+BP_R)-targetPocket.y;
     const botMirrorY=2*(PLAY_MAX_Y-BP_R)-targetPocket.y;
     [topMirrorY,botMirrorY].forEach(my=>{
@@ -1459,7 +1476,6 @@ function aiShootBumperPool(){
       [-0.08,-0.04,0,0.04,0.08].forEach(o=>angleSet.add(bankAng+o));
     });
 
-    // 4. Full 360-degree sweep
     for(let d=0;d<360;d+=6)angleSet.add(d*Math.PI/180);
 
     const speeds=[6.7,9.0,11.2,13.5];
@@ -1614,13 +1630,14 @@ function stepPhysics(){
   const rad=gameType==='void'?R:BP_R;
   const minX=PLAY_MIN_X+rad,maxX=PLAY_MAX_X-rad;
   const minY=PLAY_MIN_Y+rad,maxY=PLAY_MAX_Y-rad;
+  const damping=getFeltDamping();
+  const stopSpd=getStopSpeed();
 
   for(let i=marbles.length-1;i>=0;i--){
     const m=marbles[i];
     if(m.sunk)continue;
     m.x+=m.vx;m.y+=m.vy;
-    // Balanced wool-cloth felt rolling resistance (midpoint 0.9805)
-    m.vx*=FELT_DAMPING;m.vy*=FELT_DAMPING;
+    m.vx*=damping;m.vy*=damping;
 
     let bounced=false;
     if(m.x<minX){m.x=minX;m.vx=Math.abs(m.vx)*0.84;bounced=true;}
@@ -1644,11 +1661,19 @@ function stepPhysics(){
 
         const victimTeam=m.team===0?'Gradients':'Vectors';
         if(m.touchedByOpp || m.team!==activeTeam){
-          playSFX('score',1);
           scores[1-m.team]+=m.val;
           const scorer=m.team===0?'Vectors':'Gradients';
           const msg=`VOID DROP! ${victimTeam}'s ${m.spec.name} falls into the pit (+${m.val} pts to ${scorer})!`;
           setReferee(msg);addLog(msg);
+
+          // Sound rule:
+          // - vs CPU: happy chime when Player (team 0) knocks CPU (team 1) in; sad/penalty sound when CPU scores on Player
+          // - 2-Player Local: sad/penalty sound on any void fall (winner gets happy fanfare at game end)
+          if(vsAI && m.team===1){
+            playSFX('score',1);
+          }else{
+            playSFX('void',1);
+          }
           if(m.val>=5)bigElimination=true;
         }else{
           playSFX('void',1);
@@ -1737,7 +1762,7 @@ function stepPhysics(){
       }
     }
 
-    if(!m.sunk && Math.hypot(m.vx,m.vy)>STOP_SPEED)anyMoving=true;
+    if(!m.sunk && Math.hypot(m.vx,m.vy)>stopSpd)anyMoving=true;
     else{m.vx=0;m.vy=0;}
   }
 
@@ -1820,7 +1845,8 @@ function finishGame(winnerTeam){
 
   const neededToWin=Math.ceil(seriesMax/2);
   if(seriesWins[0]<neededToWin && seriesWins[1]<neededToWin){
-    const gWinner=winnerTeam===0?'Home Team':(vsAI?selectedRival.name:'Away Team');
+    playSFX('win');
+    const gWinner=winnerTeam===0?(gameType==='void'?'Gradients (Left)':'Home Red'):(vsAI?selectedRival.name:(gameType==='void'?'Vectors (Right)':'Away White'));
     const msg=`${gWinner} wins Game ${gameNum}! Series is ${seriesWins[0]}–${seriesWins[1]}. Starting Game ${gameNum+1}...`;
     setReferee(msg);addLog(msg);
     gameNum++;
@@ -1831,24 +1857,29 @@ function finishGame(winnerTeam){
 
   phase='over';
   const p1Won=(seriesWins[0]>=neededToWin);
-  if(p1Won){
+  if(!vsAI){
+    // 2-Player Local: Winner always receives the happy victory fanfare
+    playSFX('win');
+    saveData.shards+=15;
+    persist();
+    const winnerLabel=p1Won?(gameType==='void'?'GRADIENTS (LEFT)':'HOME RED (LEFT)'):(gameType==='void'?'VECTORS (RIGHT)':'AWAY WHITE (RIGHT)');
+    const msg=`MATCH VICTORY! ${winnerLabel} wins the match! +15 ◆`;
+    setReferee(msg);addLog(msg);
+  }else if(p1Won){
     saveData.record.wins++;
     playSFX('win');
-    let earned=15;
-    if(vsAI){
-      earned=selectedRival.reward;
-      if(!saveData.beaten.includes(selectedRival.id))saveData.beaten.push(selectedRival.id);
-    }
+    const earned=selectedRival.reward;
+    if(!saveData.beaten.includes(selectedRival.id))saveData.beaten.push(selectedRival.id);
     saveData.shards+=earned;
     persist();
-    const msg=`MATCH VICTORY! You defeated ${vsAI?selectedRival.name:'Opponent'} +${earned} ◆`;
+    const msg=`MATCH VICTORY! You defeated ${selectedRival.name} +${earned} ◆`;
     setReferee(msg);addLog(msg);
   }else{
     saveData.record.losses++;
     playSFX('lose');
     saveData.shards+=5;
     persist();
-    const msg=`MATCH DEFEAT! ${vsAI?selectedRival.name:'Opponent'} wins the match. +5 ◆ consolation.`;
+    const msg=`MATCH DEFEAT! ${selectedRival.name} wins the match. +5 ◆ consolation.`;
     setReferee(msg);addLog(msg);
   }
   updateHUD();
@@ -2104,7 +2135,7 @@ function drawTable(theme){
     ctx.fillStyle='rgba(255,255,255,0.45)';
     ctx.beginPath();ctx.arc(cx,cy,4.5,0,Math.PI*2);ctx.fill();
 
-    // Extra-Tight Goal Pockets (`BP_POCKET_R = 13.4` — snugger than a 14px ball)
+    // Extra-Tight Goal Pockets (`BP_POCKET_R = 13.4`)
     BP_POCKETS.forEach(pk=>{
       ctx.fillStyle='rgba(0,0,0,0.5)';
       ctx.beginPath();ctx.arc(pk.x,pk.y+1.2,BP_POCKET_R+2.5,0,Math.PI*2);ctx.fill();
